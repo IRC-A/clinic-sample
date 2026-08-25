@@ -1,0 +1,635 @@
+2026-08-24 12:19:22,528 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 12:19:22,688 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [64202]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 12:19:23,788 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 12:19:23,794 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 12:19:23,798 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 12:19:23,814 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 12:27:47,719 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [64202]
+2026-08-24 12:27:59,634 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 12:27:59,790 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [67370]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 12:28:00,896 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 12:28:00,900 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 12:28:00,905 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 12:28:00,917 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:09:55,296 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67370]
+2026-08-24 15:10:13,684 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:10:13,857 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [11325]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 15:10:14,996 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 15:10:15,000 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 15:10:15,005 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 15:10:15,017 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:11:44,689 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [11325]
+2026-08-24 15:12:11,261 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:12:12,651 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [12616]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:12:13,247 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [12616]
+2026-08-24 15:12:40,907 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:12:43,958 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [14357]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:13:36,458 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [14357]
+2026-08-24 15:13:39,423 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:13:39,567 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [15913]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 15:13:40,621 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 15:13:40,628 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 15:13:40,633 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 15:13:40,648 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:17:16,348 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15913]
+2026-08-24 15:17:19,534 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:17:19,736 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [17683]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 15:17:20,784 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 15:17:20,787 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 15:17:20,792 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 15:17:20,807 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 15:19:01,013 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [17683]
+2026-08-24 15:19:03,790 - INFO - ------------ main_agent.py logs -------------
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/__main__.py", line 4, in <module>
+    uvicorn.main()
+    ~~~~~~~~~~~~^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/main.py", line 440, in main
+    run(
+    ~~~^
+        app,
+        ^^^^
+    ...<48 lines>...
+        reset_contextvars=reset_contextvars,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/main.py", line 609, in run
+    config.load_app()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 428, in load_app
+    return import_from_string(self.app)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/src/agents/main_agent/main_agent.py", line 115, in <module>
+    @app.route("/.well-known/agent-card.json")
+     ^^^^^^^^^
+AttributeError: 'Starlette' object has no attribute 'route'. Did you mean: 'router'?
+2026-08-24 15:19:40,769 - INFO - ------------ main_agent.py logs -------------
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/__main__.py", line 4, in <module>
+    uvicorn.main()
+    ~~~~~~~~~~~~^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1569, in __call__
+    return self.main(*args, **kwargs)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1490, in main
+    rv = self.invoke(ctx)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 1353, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/click/core.py", line 907, in invoke
+    return callback(*args, **kwargs)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/main.py", line 440, in main
+    run(
+    ~~~^
+        app,
+        ^^^^
+    ...<48 lines>...
+        reset_contextvars=reset_contextvars,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/main.py", line 609, in run
+    config.load_app()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/config.py", line 428, in load_app
+    return import_from_string(self.app)
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py", line 88, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/sandrogarcia/GitRespos/dev.to-demo/src/agents/main_agent/main_agent.py", line 121, in <module>
+    @app.route("/.well-known/agent-card.json")
+     ^^^^^^^^^
+AttributeError: 'Starlette' object has no attribute 'route'. Did you mean: 'router'?
+2026-08-24 15:21:29,276 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [21335]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64329 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64330 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [21335]
+2026-08-24 15:25:06,755 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 15:25:06,898 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [23675]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     127.0.0.1:64772 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 15:25:07,961 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 15:25:07,967 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:64775 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 15:25:07,974 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 15:25:08,110 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:50526 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50527 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 15:45:19,077 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [30804]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 48] error while attempting to bind on address ('127.0.0.1', 8310): [errno 48] address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     127.0.0.1:51365 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51379 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51380 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 15:53:01,929 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=queiro%20un%20turno%20para%20pediatria "HTTP/1.1 404 Not Found"
+[Chatbot] Message received in session crm_session_3ce08e82: queiro un turno para pediatria
+INFO:     127.0.0.1:51381 - "POST / HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 16:00:23,832 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [23675]
+2026-08-24 16:00:37,026 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [37307]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51659 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51793 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37307]
+2026-08-24 16:06:42,105 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [41183]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41183]
+nohup: MAIN_AGENT_URL=http://192.168.0.3:8310: No such file or directory
+nohup: MAIN_AGENT_URL=http://host.docker.internal:8310: No such file or directory
+nohup: MAIN_AGENT_URL=http://host.docker.internal:8310: No such file or directory
+nohup: MAIN_AGENT_URL=http://192.168.0.3:8310: No such file or directory
+2026-08-24 16:21:56,231 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [52760]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52461 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [52760]
+2026-08-24 16:23:07,253 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [54519]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54519]
+2026-08-24 17:12:57,870 - INFO - ------------ main_agent.py logs -------------
+INFO:     Started server process [67561]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53913 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53917 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53922 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53923 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53924 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53925 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53926 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53927 - "POST / HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [67561]
+2026-08-24 17:19:35,863 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:19:36,304 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [69803]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8310 (Press CTRL+C to quit)
+2026-08-24 17:19:37,580 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:19:37,584 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:19:37,588 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 17:19:37,601 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F127.0.0.1%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:20:28,879 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69803]
+2026-08-24 17:20:33,099 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:20:33,229 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [70142]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:20:34,276 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:20:34,282 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:20:34,288 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 17:20:34,326 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2F192.168.0.3%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:21:13,863 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [70142]
+2026-08-24 17:21:20,555 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:21:20,701 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [70465]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:21:21,746 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:21:21,751 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:21:21,759 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54031 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:21:21,786 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:54052 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54061 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54066 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54071 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54079 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54084 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54090 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54095 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54101 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54102 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54103 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+[Chatbot] Message received in session crm_session_0fddb979: hola
+INFO:     127.0.0.1:54114 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:22:46,934 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=hola "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54104 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54117 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54118 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:22:50,857 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=necesito%20un%20turno%20para%20Pedriatria. "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: necesito un turno para Pedriatria.
+INFO:     127.0.0.1:54119 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54126 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54134 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54139 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54147 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54154 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54160 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54169 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54177 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54185 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54190 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54196 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54201 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54210 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54224 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54233 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54241 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54246 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54252 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54261 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:25:32,990 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [70465]
+2026-08-24 17:25:37,168 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:25:37,360 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [71574]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:25:38,417 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:25:38,430 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:25:38,440 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54277 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:25:38,471 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:54296 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54310 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54323 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54328 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54333 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54344 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54353 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54359 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54366 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54378 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54383 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54394 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54399 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54406 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54412 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:27:51,364 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [71574]
+2026-08-24 17:27:55,396 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:27:55,551 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [72186]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:27:56,618 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:27:56,630 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:27:56,666 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54429 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:27:56,690 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:54442 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54456 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54461 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54467 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54473 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54480 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54487 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54495 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54503 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54509 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54515 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54520 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54522 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54523 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:29:33,244 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=necesito%20un%20turno%20para%20Pedriatria. "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: necesito un turno para Pedriatria.
+INFO:     127.0.0.1:54524 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54532 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54537 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54542 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54557 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54568 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54575 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54580 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54587 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54593 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54608 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54620 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54625 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54634 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54640 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:31:39,456 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72186]
+2026-08-24 17:31:55,062 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:31:55,697 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [73220]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:31:56,825 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:31:56,828 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:31:56,834 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:54658 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:31:56,858 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:54675 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54683 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54688 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54714 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54724 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54729 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54737 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54744 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54754 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54759 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54766 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54771 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54777 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54786 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54792 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54800 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54808 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54814 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54819 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54831 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54836 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54844 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54852 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54857 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54863 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54870 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54877 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:35:55,790 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [73220]
+2026-08-24 17:36:01,806 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:36:04,087 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:36:05,632 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:36:05,636 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:36:05,641 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 17:36:05,659 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Started server process [74378]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:36:52,299 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [74378]
+2026-08-24 17:37:23,353 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:37:25,780 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:37:27,588 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:37:27,592 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:37:27,597 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+2026-08-24 17:37:27,614 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 400 Bad Request"
+INFO:     Started server process [74687]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 17:39:12,209 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [74687]
+2026-08-24 17:39:17,767 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 17:39:18,288 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [75424]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 17:39:19,360 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 17:39:19,364 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 17:39:19,369 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:55005 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 17:39:19,396 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:63108 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63109 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 19:58:15,611 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=me%20agendas%20un%20turno%20para%20Pediatria "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: me agendas un turno para Pediatria
+INFO:     127.0.0.1:63110 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63294 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63295 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 19:58:40,726 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Sandro%2C%20para%20el%20jueves%2012%20de%20septiembre%20a%20las%2018.00 "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: Sandro, para el jueves 12 de septiembre a las 18.00
+INFO:     127.0.0.1:63296 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63407 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63408 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 19:59:02,609 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Sandro%2C%20para%20el%20jueves%2012%20de%20septiembre%20a%20las%2018.00 "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: Sandro, para el jueves 12 de septiembre a las 18.00
+INFO:     127.0.0.1:63409 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63439 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63440 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 19:59:24,987 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Mi%20nombre%20es%20Sandro%2C%20quiero%20la%20cita%20para%20el%2012%20de%20septiembre%20a%20las%2018.00 "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: Mi nombre es Sandro, quiero la cita para el 12 de septiembre a las 18.00
+INFO:     127.0.0.1:63441 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63448 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63449 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 19:59:35,162 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=ok "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_0fddb979: ok
+INFO:     127.0.0.1:63450 - "POST / HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 20:39:05,088 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [75424]
+2026-08-24 20:39:24,894 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 20:39:25,405 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [23248]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 20:39:26,455 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 20:39:26,462 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 20:39:26,469 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:49176 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 20:39:26,598 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-24 20:48:24,068 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [23248]
+2026-08-24 20:48:28,750 - INFO - ------------ main_agent.py logs -------------
+2026-08-24 20:48:29,018 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+INFO:     Started server process [25672]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8310 (Press CTRL+C to quit)
+2026-08-24 20:48:30,142 - INFO - HTTP Request: GET http://localhost:8000/public_key "HTTP/1.1 200 OK"
+2026-08-24 20:48:30,147 - INFO - HTTP Request: POST http://localhost:8000/register/init "HTTP/1.1 200 OK"
+2026-08-24 20:48:30,152 - INFO - HTTP Request: POST http://localhost:8000/register/verify "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:49766 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 20:48:30,174 - INFO - HTTP Request: POST http://localhost:8000/register/agent?url=http%3A%2F%2Fhost.docker.internal%3A8310&channels=hospital%2Cpediatria%2Cclinica_general%2Concologia&node_id=main-agent "HTTP/1.1 200 OK"
+BFAAgent: Successfully registered 'main-agent' via cryptographic handshake.
+INFO:     127.0.0.1:51703 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51705 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51784 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 21:01:34,323 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-24 21:01:36,577 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Agendar%20turno%20otorrinolaringolog%C3%ADa%20paciente%20con%20dolor%20de%20garganta. "HTTP/1.1 200 OK"
+2026-08-24 21:01:38,217 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_3b22152e: Hola, estoy con mucho dolor de garganta. Necesito un turno.
+[MainAgent] Reduced query from LLM: Agendar turno otorrinolaringología paciente con dolor de garganta.
+[MainAgent] Synthesized response: Hola, lamento saber que estás experimentando dolor de garganta. Para poder agendar tu cita con otorrinolaringología, por favor, indícame el nombre del paciente, así como el día y la hora que prefieres. Estoy aquí para ayudarte.
+INFO:     127.0.0.1:51785 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51984 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51985 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 21:02:01,797 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-24 21:02:03,451 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Agendar%20turno%20otorrinolaringolog%C3%ADa%20paciente%20Sandro%20lunes. "HTTP/1.1 200 OK"
+2026-08-24 21:02:04,594 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_3b22152e: Sandro, para el lunes si es posible.
+[MainAgent] Reduced query from LLM: Agendar turno otorrinolaringología paciente Sandro lunes.
+[MainAgent] Synthesized response: Hola Sandro, gracias por tu respuesta. Para poder agendar tu cita con otorrinolaringología, por favor, indícame tu nombre completo, así como el día y la hora que prefieres para la cita. Estoy aquí para ayudarte.
+INFO:     127.0.0.1:51986 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52065 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52066 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+2026-08-24 21:02:29,956 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-08-24 21:02:32,030 - INFO - HTTP Request: POST http://localhost:8000/invoke?query=Agendar%20turno%20otorrinolaringolog%C3%ADa%20paciente%20Sandro%20lunes%2017%3A00. "HTTP/1.1 200 OK"
+2026-08-24 21:02:33,931 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[Chatbot] Message received in session crm_session_3b22152e: Mi nombre ya te dije, es Sandro. Y a las 17.00 esta perfecto.
+[MainAgent] Reduced query from LLM: Agendar turno otorrinolaringología paciente Sandro lunes 17:00.
+[MainAgent] Synthesized response: Hola Sandro, lamento informarte que en la 'Clínica del Dr. Cureta' solo ofrecemos servicios de oncología. Si necesitas atención relacionada con oncología o tienes alguna pregunta sobre nuestros servicios, estaré encantado de ayudarte. Si buscas atención para tu dolor de garganta, te recomendaría contactar a una clínica que ofrezca servicios de otorrinolaringología. Estoy aquí para cualquier otra consulta que puedas tener.
+INFO:     127.0.0.1:52067 - "POST / HTTP/1.1" 200 OK

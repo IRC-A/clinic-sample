@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+# Environment files (ignore any .env in repo or subfolders)
+.env
+**/.env
+.env.*
+
+# Virtual environments
+.venv
+**/.venv
+venv/
+
+# Local history (editors / tools)
+.history/
+dist/
+build/
+*.egg-info

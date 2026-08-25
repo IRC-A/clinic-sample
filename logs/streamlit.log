@@ -1,0 +1,53 @@
+nohup: streamlit: No such file or directory
+nohup: streamlit: No such file or directory
+nohup: .venv/bin/streamlit: No such file or directory
+2026-08-24 10:58:53.473 Uvicorn server started on :::8501
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.0.3:8501
+  External URL: http://187.19.234.57:8501
+
+  For better performance, install the Watchdog module:
+
+  $ xcode-select --install
+  $ pip install watchdog
+            
+[31m──[0m[31m────────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m─────────────────────────[0m[31m──[0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/streaml[0m [31m [0m
+[31m [0m [2mit/runtime/scriptrunner/[0m[1mexec_code.py[0m:136 in exec_func_with_error_handling            [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/streaml[0m [31m [0m
+[31m [0m [2mit/runtime/scriptrunner/[0m[1mscript_runner.py[0m:837 in code_to_exec                         [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/apps/[0m[1mstreamlit_chat.py[0m:8 in <module>       [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m   [2m  5 [0m                                                                               [31m [0m
+[31m [0m   [2m  6 [0m[2m# --- Configuración de la Página Streamlit -----------------------------------[0m [31m [0m
+[31m [0m   [2m  7 [0mst.set_page_config(                                                            [31m [0m
+[31m [0m [31m❱ [0m  8 [2m│   [0mpage_title=[33m"[0m[33mDE OTRO ÁNGULO | A[0m[1;4;33mgentes CRM[0m[1;4;33m"[0m[1;4m,[0m                                 [31m [0m
+[31m [0m   [2m  9 [0m[2m│   [0mpage_icon=[33m"[0m[33m🤖[0m[33m"[0m,                                                            [31m [0m
+[31m [0m   [2m 10 [0m[2m│   [0mlayout=[33m"[0m[33mwide[0m[33m"[0m,                                                             [31m [0m
+[31m [0m   [2m 11 [0m[2m│   [0minitial_sidebar_state=[33m"[0m[33mexpanded[0m[33m"[0m,                                          [31m [0m
+[31m────────────────────────────────────────────────────────────────────────────────────────[0m
+[1;91mNameError: [0mname [32m'HOSPITAL_NAME'[0m is not defined
+[31m──[0m[31m────────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m─────────────────────────[0m[31m──[0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/streaml[0m [31m [0m
+[31m [0m [2mit/runtime/scriptrunner/[0m[1mexec_code.py[0m:136 in exec_func_with_error_handling            [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/.venv/lib/python3.13/site-packages/streaml[0m [31m [0m
+[31m [0m [2mit/runtime/scriptrunner/[0m[1mscript_runner.py[0m:837 in code_to_exec                         [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m [2m/Users/sandrogarcia/GitRespos/dev.to-demo/apps/[0m[1mstreamlit_chat.py[0m:8 in <module>       [31m [0m
+[31m [0m                                                                                      [31m [0m
+[31m [0m   [2m  5 [0m                                                                               [31m [0m
+[31m [0m   [2m  6 [0m[2m# --- Configuración de la Página Streamlit -----------------------------------[0m [31m [0m
+[31m [0m   [2m  7 [0mst.set_page_config(                                                            [31m [0m
+[31m [0m [31m❱ [0m  8 [2m│   [0mpage_title=[33mf[0m[33m"[0m[33mAgentes CRM — [0m[33m{[0mHO[1;4mSPITAL_NAME[0m[1;4;33m}[0m[1;4;33m"[0m,                               [31m [0m
+[31m [0m   [2m  9 [0m[2m│   [0mpage_icon=[33m"[0m[33m🤖[0m[33m"[0m,                                                            [31m [0m
+[31m [0m   [2m 10 [0m[2m│   [0mlayout=[33m"[0m[33mwide[0m[33m"[0m,                                                             [31m [0m
+[31m [0m   [2m 11 [0m[2m│   [0minitial_sidebar_state=[33m"[0m[33mexpanded[0m[33m"[0m,                                          [31m [0m
+[31m────────────────────────────────────────────────────────────────────────────────────────[0m
+[1;91mNameError: [0mname [32m'HOSPITAL_NAME'[0m is not defined
+  Stopping...

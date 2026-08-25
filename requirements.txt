@@ -1,0 +1,8 @@
+# Runtime dependencies for dev.to-demo
+# Add packages here, for example:
+# requests>=2.0
+bfa-irc-a-sdk==0.3.0.dev14
+pyseto
+cryptography
+pydantic
+httpx
