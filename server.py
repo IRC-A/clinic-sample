@@ -4,7 +4,8 @@ import json
 import httpx
 import asyncio
 import subprocess
-from fastapi import FastAPI, Request
+import websockets
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 
@@ -246,8 +247,46 @@ async def startup_event():
         pass
 
 
+@app.websocket("/_stcore/stream")
+@app.websocket("/{path:path}")
+async def websocket_proxy(websocket: WebSocket, path: str = ""):
+    """Bi-directional WebSocket proxying for Streamlit UI real-time session stream."""
+    await websocket.accept()
+    streamlit_ws_url = f"ws://127.0.0.1:{STREAMLIT_PORT}/_stcore/stream"
+    if path and path != "_stcore/stream":
+        streamlit_ws_url = f"ws://127.0.0.1:{STREAMLIT_PORT}/{path}"
+        
+    try:
+        async with websockets.connect(streamlit_ws_url) as target_ws:
+            async def forward_client_to_streamlit():
+                try:
+                    while True:
+                        data = await websocket.receive()
+                        if "text" in data and data["text"]:
+                            await target_ws.send(data["text"])
+                        elif "bytes" in data and data["bytes"]:
+                            await target_ws.send(data["bytes"])
+                except Exception:
+                    pass
+
+            async def forward_streamlit_to_client():
+                try:
+                    async for message in target_ws:
+                        if isinstance(message, str):
+                            await websocket.send_text(message)
+                        else:
+                            await websocket.send_bytes(message)
+                except Exception:
+                    pass
+
+            await asyncio.gather(forward_client_to_streamlit(), forward_streamlit_to_client())
+    except (WebSocketDisconnect, Exception):
+        pass
+
+
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
+    """Proxies HTTP web requests to Streamlit running on port 8501."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
