@@ -16,7 +16,7 @@ class TriageAgent:
     Authorized Channels: ['#citas', '#staff']
     Strict Zero-Trust Restriction: ['#historial-medico', '#vademecum'] strictly masked/denied.
     Pure Agentic Model: Resolves capabilities dynamically via BFA Gateway Late-Binding Discovery (POST /discover).
-    Zero fake fallback strings.
+    Zero hardcoded strings or mock fallback defaults.
     """
 
     def __init__(self, api_key: Optional[str] = None):
@@ -113,7 +113,7 @@ class TriageAgent:
         # Determine target channel purely by intent scope (Medical History vs Reception/Staff)
         if any(kw in lowered for kw in ["historial", "history", "records", "paciente", "patient", "ignore previous", "ignora"]):
             if not any(kw in lowered for kw in ["appointment", "booking", "slot", "turno", "cita", "guardia", "on-call"]):
-                disc_res = await self.discover_and_execute(user_message, {"paciente_id": "101"}, "#historial-medico")
+                disc_res = await self.discover_and_execute(user_message, {}, "#historial-medico")
                 return {
                     "response": "⚠️ **Access Denied by BFA Gateway (Zero-Trust Rule)**: The Triage role (`triage-agent`) does not have permissions to query channel `#historial-medico`. Access to Medical History has been blocked by BFA Policy Engine to protect patient confidentiality.",
                     "channel_used": "#historial-medico (MASKED)",
@@ -122,7 +122,7 @@ class TriageAgent:
                 }
 
         # Dynamic semantic discovery over BFA Gateway FAISS index
-        target_channel = "#staff" if "guardia" in lowered or "duty" in lowered or "doctor" in lowered else "#citas"
+        target_channel = "#staff" if any(kw in lowered for kw in ["guardia", "duty", "doctor", "staff"]) else "#citas"
         gw_res = await self.discover_and_execute(user_message, {"query": user_message}, target_channel)
 
         if gw_res.get("status") in ["error", "gateway_unreachable"] and gw_res.get("http_code") != 403:
@@ -174,11 +174,11 @@ class TriageAgent:
 
         if tool_data.get("status") == "confirmed" or "booking" in tool_data:
             b = tool_data.get("booking", {})
-            app_id = b.get("appointment_id", "TUR-101")
-            p_name = b.get("patient_name", "Juan Pérez")
-            spec = b.get("specialty", "Pediatrics")
-            dt = b.get("date", "2026-08-28")
-            tm = b.get("time", "10:00")
+            app_id = b.get("appointment_id", "N/A")
+            p_name = b.get("patient_name", "N/A")
+            spec = b.get("specialty", "N/A")
+            dt = b.get("date", "N/A")
+            tm = b.get("time", "N/A")
 
             return (
                 f"🎉 **Appointment Successfully Confirmed!**\n\n"
@@ -193,10 +193,10 @@ class TriageAgent:
         if slots:
             lines = ["Hello! We have the following slots available:\n"]
             for t in slots:
-                spec = t.get("specialty") or t.get("especialidad", "General")
-                doc = t.get("doctor_name") or t.get("medico_nombre", "Doctor")
-                dt = t.get("date") or t.get("fecha", "2026-08-28")
-                tm = t.get("time") or t.get("hora", "10:00")
+                spec = t.get("specialty") or t.get("especialidad", "N/A")
+                doc = t.get("doctor_name") or t.get("medico_nombre", "N/A")
+                dt = t.get("date") or t.get("fecha", "N/A")
+                tm = t.get("time") or t.get("hora", "N/A")
                 lines.append(f"• **{spec}**: **{doc}** on **{dt}** at **{tm} hs**.")
 
             lines.append("\nWould you like us to confirm one of these appointments for you?")
