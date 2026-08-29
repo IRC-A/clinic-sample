@@ -22,5 +22,5 @@ COPY . /app
 ENV PORT=8080
 EXPOSE 8080
 
-# Run Streamlit on Cloud Run port
-CMD streamlit run app.py --server.port=${PORT} --server.address=0.0.0.0
+# Run Streamlit in headless server mode for Cloud Run compatibility
+CMD ["sh", "-c", "streamlit run app.py --server.port=${PORT:-8080} --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"]
