@@ -64,6 +64,38 @@ TOOLS_REGISTRY = {
 }
 
 
+@app.get("/mcp_citas/tools")
+@app.get("/mcp-citas/tools")
+@app.get("/mcp_citas")
+@app.get("/mcp-citas")
+def get_citas():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
+
+
+@app.get("/mcp_staff/tools")
+@app.get("/mcp-staff/tools")
+@app.get("/mcp_staff")
+@app.get("/mcp-staff")
+def get_staff():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
+
+
+@app.get("/mcp_ehr/tools")
+@app.get("/mcp-ehr/tools")
+@app.get("/mcp_ehr")
+@app.get("/mcp-ehr")
+def get_ehr():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
+
+
+@app.get("/mcp_vademecum/tools")
+@app.get("/mcp-vademecum/tools")
+@app.get("/mcp_vademecum")
+@app.get("/mcp-vademecum")
+def get_vademecum():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
+
+
 @app.get("/register/auto")
 async def trigger_register():
     from src.config import config
@@ -124,16 +156,7 @@ async def startup_event():
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Intercepts FastMCP tool requests or proxies web requests to Streamlit running on port 8501."""
-    clean_path = path.strip("/")
-    
-    # FastMCP Tool Metadata Discovery Endpoint Handling for BFA Gateway
-    if clean_path.startswith("mcp_") or clean_path.startswith("mcp-"):
-        parts = clean_path.split("/")
-        srv_name = parts[0].replace("-", "_")
-        tools = TOOLS_REGISTRY.get(srv_name, [])
-        return JSONResponse(content=tools)
-
+    """Proxies web requests to Streamlit running on port 8501."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
