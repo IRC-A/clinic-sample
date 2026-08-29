@@ -6,22 +6,34 @@ from typing import Dict, Any, List, Optional
 from google import genai
 from google.genai import types
 
+from bfa_sdk.core.agent import BFAAgent
 from src.config import config
 from src.security.det_validator import issue_det_ticket
 
 
-class TriageAgent:
+class TriageAgent(BFAAgent):
     """
     Autonomous Patient Portal Triage Agent for 'clinic-sample' built with Google ADK & Gemini 3.5 Flash.
+    Inherits from BFAAgent for automatic self-registration (selfregister) with BFA Gateway.
     Authorized Channels: ['#citas', '#staff']
     Strict Zero-Trust Restriction: ['#historial-medico', '#vademecum'] strictly masked/denied.
     Pure Agentic Model: Resolves capabilities dynamically via BFA Gateway Late-Binding Discovery (POST /discover).
-    Zero hardcoded strings or mock fallback defaults.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.agent_id = "triage-agent"
-        self.name = "Triage Agent"
+    def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None):
+        agent_url = url or os.getenv("TRIAGE_PUBLIC_URL", os.getenv("PUBLIC_URL", "http://127.0.0.1:8003"))
+        gateway_url = config.bfa_gateway_url
+
+        super().__init__(
+            agent_id="triage-agent",
+            name="Triage Agent",
+            description="Triage Agent for Hospital Booking: identifies patient needs and routes requests via BFA Gateway.",
+            tags=["triage", "Booking", "concierge"],
+            examples=["I need an appointment", "Is there an emergency on-call doctor available?"],
+            url=agent_url,
+            gateway_url=gateway_url
+        )
+
         self.model = "gemini-3.5-flash"
         self.authorized_channels = config.triage_channels
 
@@ -51,7 +63,7 @@ class TriageAgent:
         Sends raw natural language query to BFA Gateway POST /discover.
         FAISS vector search resolves target capability, checks channel masking, mints DET ticket, and returns prepared call.
         """
-        gateway_url = config.bfa_gateway_url.rstrip("/")
+        gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
 
         # BFA Gateway Protocol Level Channel Masking Check
         if target_channel in ["#historial-medico", "#vademecum"]:
@@ -106,11 +118,11 @@ class TriageAgent:
                 "det": det_data
             }
 
-    async def run(self, user_message: str) -> Dict[str, Any]:
+    async def run(self, user_message: str, context: Any = None) -> Dict[str, Any]:
         """Pure Autonomous Agentic Execution Loop via BFA Gateway POST /discover."""
         lowered = user_message.lower().strip()
 
-        # Determine target channel purely by intent scope (Medical History vs Reception/Staff)
+        # Determine target channel purely by intent scope
         if any(kw in lowered for kw in ["historial", "history", "records", "paciente", "patient", "ignore previous", "ignora"]):
             if not any(kw in lowered for kw in ["appointment", "booking", "slot", "turno", "cita", "guardia", "on-call"]):
                 disc_res = await self.discover_and_execute(user_message, {}, "#historial-medico")
@@ -121,7 +133,6 @@ class TriageAgent:
                     "blocked": True
                 }
 
-        # Dynamic semantic discovery over BFA Gateway FAISS index
         target_channel = "#staff" if any(kw in lowered for kw in ["guardia", "duty", "doctor", "staff"]) else "#citas"
         gw_res = await self.discover_and_execute(user_message, {"query": user_message}, target_channel)
 
@@ -136,7 +147,6 @@ class TriageAgent:
 
         tool_data = gw_res.get("data", {})
 
-        # Synthesize response via Gemini 3.5 Flash or natural formatter
         if self.client:
             try:
                 prompt = (

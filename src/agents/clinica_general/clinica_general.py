@@ -6,23 +6,36 @@ from typing import Dict, Any, Optional
 from google import genai
 from google.genai import types
 
+from bfa_sdk.core.agent import BFAAgent
 from src.config import config
 from src.security.det_validator import issue_det_ticket
 
 
-class ClinicaGeneralAgent:
+class ClinicaGeneralAgent(BFAAgent):
     """
     General Medicine Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
+    Inherits from BFAAgent for automatic self-registration (selfregister) with BFA Gateway.
     Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
     Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for general practice EHR records, 
     drug safety, and non-repudiation evolutions over BFA Gateway network.
     """
 
-    def __init__(self, doctor_id: str = "MED-201", api_key: Optional[str] = None):
-        self.agent_id = "clinica-general-agent"
+    def __init__(self, doctor_id: str = "MED-201", url: Optional[str] = None, api_key: Optional[str] = None):
+        agent_url = url or os.getenv("CLINICA_PUBLIC_URL", os.getenv("AGENT_URL", "http://127.0.0.1:8005"))
+        gateway_url = config.bfa_gateway_url
+
+        super().__init__(
+            agent_id="clinica-general-agent",
+            name="Clinica General Agent",
+            description="General clinic specialist: evaluates adult complaints and primary care via BFA Gateway.",
+            tags=["salud", "clinica", "medicina general"],
+            examples=["tengo dolor de garganta", "control de hipertension"],
+            url=agent_url,
+            gateway_url=gateway_url
+        )
+
         self.doctor_id = doctor_id
         self.specialty = "Clinica General"
-        self.name = "Clinica General Specialist Agent"
         self.model = "gemini-3.5-pro"
         self.authorized_channels = config.doctor_channels
 
@@ -44,7 +57,7 @@ class ClinicaGeneralAgent:
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
         """BFA Gateway Late-Binding Semantic Discovery (POST /discover) & Execution."""
-        gateway_url = config.bfa_gateway_url.rstrip("/")
+        gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
         payload = {
@@ -91,7 +104,7 @@ class ClinicaGeneralAgent:
                 "params": restricted_params
             }
 
-    async def run(self, user_message: str, paciente_id: str = "101") -> Dict[str, Any]:
+    async def run(self, user_message: str, paciente_id: str = "101", context: Any = None) -> Dict[str, Any]:
         """100% Dynamic Agent Execution with Gemini 3.5 Pro."""
         audit_trail = []
 

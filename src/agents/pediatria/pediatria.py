@@ -6,23 +6,36 @@ from typing import Dict, Any, Optional
 from google import genai
 from google.genai import types
 
+from bfa_sdk.core.agent import BFAAgent
 from src.config import config
 from src.security.det_validator import issue_det_ticket
 
 
-class PediatriaAgent:
+class PediatriaAgent(BFAAgent):
     """
     Pediatrics Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
+    Inherits from BFAAgent for automatic self-registration (selfregister) with BFA Gateway.
     Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Pure Dynamic Agent: ZERO hardcoded string literals, ZERO hardcoded tool arguments, ZERO hardcoded 3-step sequences.
-    100% LLM & BFA Gateway Late-Binding Semantic Discovery (POST /discover).
+    Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for pediatric EHR records, 
+    pediatric drug safety, and non-repudiation evolutions over BFA Gateway network.
     """
 
-    def __init__(self, doctor_id: str = "MED-301", api_key: Optional[str] = None):
-        self.agent_id = "pediatria-agent"
+    def __init__(self, doctor_id: str = "MED-301", url: Optional[str] = None, api_key: Optional[str] = None):
+        agent_url = url or os.getenv("PEDIATRIA_PUBLIC_URL", os.getenv("AGENT_URL", "http://127.0.0.1:8004"))
+        gateway_url = config.bfa_gateway_url
+
+        super().__init__(
+            agent_id="pediatria-agent",
+            name="Pediatria Agent",
+            description="Pediatrics specialist agent: evaluates pediatric symptoms, vaccination, and growth guidance via BFA Gateway.",
+            tags=["pediatria", "niños", "infantes", "vacunas"],
+            examples=["mi bebe tiene fiebre y no come", "consulta pediatrica general"],
+            url=agent_url,
+            gateway_url=gateway_url
+        )
+
         self.doctor_id = doctor_id
         self.specialty = "Pediatrics"
-        self.name = "Pediatria Specialist Agent"
         self.model = "gemini-3.5-pro"
         self.authorized_channels = config.doctor_channels
 
@@ -44,7 +57,7 @@ class PediatriaAgent:
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
         """BFA Gateway Late-Binding Semantic Discovery (POST /discover) & Execution."""
-        gateway_url = config.bfa_gateway_url.rstrip("/")
+        gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
         payload = {
@@ -91,24 +104,16 @@ class PediatriaAgent:
                 "params": restricted_params
             }
 
-    async def run(self, user_message: str, paciente_id: str = "101") -> Dict[str, Any]:
-        """
-        100% Dynamic Agent Execution.
-        No hardcoded 'Amoxicillin', no hardcoded 'Symptomatic follow-up', no hardcoded fixed sequence.
-        Passes user_message directly to BFA Gateway discovery and Gemini 3.5 Pro.
-        """
+    async def run(self, user_message: str, paciente_id: str = "101", context: Any = None) -> Dict[str, Any]:
+        """100% Dynamic Agent Execution with Gemini 3.5 Pro."""
         audit_trail = []
 
-        # Determine target channel purely from user_message intent
         lowered = user_message.lower()
         if any(kw in lowered for kw in ["vademecum", "contraindicacion", "drug", "medicamento", "alergia", "allergy", "prescribe", "receta"]):
             target_channel = "#vademecum"
-        elif any(kw in lowered for kw in ["historial", "history", "record", "evolucion", "paciente", "patient", "diagnostico"]):
-            target_channel = "#historial-medico"
         else:
             target_channel = "#historial-medico"
 
-        # Execute BFA Gateway discovery dynamically with user's exact semantic query
         disc_exec = await self.discover_and_execute(
             user_message,
             target_channel,
@@ -118,7 +123,6 @@ class PediatriaAgent:
 
         bfa_result = disc_exec.get("result", {})
 
-        # Generate response dynamically via Gemini 3.5 Pro
         if self.client:
             try:
                 prompt = (
@@ -138,9 +142,9 @@ class PediatriaAgent:
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Channel Response ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
+                text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
         else:
-            text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Data ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
+            text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Data: {json.dumps(bfa_result, ensure_ascii=False)}"
 
         return {
             "response": text_res,
