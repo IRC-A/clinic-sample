@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for The Fortified Healthcare Fleet Streamlit Web UI & Agents
+# Multi-stage Dockerfile for The Fortified Healthcare Fleet Web UI, FastMCP Tools & Agents
 FROM python:3.11-slim
 
 # Prevent interactive prompts during apt package installation
@@ -25,5 +25,5 @@ COPY . /app
 
 EXPOSE 8080
 
-# Use python -m streamlit to guarantee execution regardless of PATH aliases
-CMD ["python", "-m", "streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+# Execute server.py to expose FastMCP tool discovery routes and proxy Streamlit
+CMD ["python", "server.py"]
