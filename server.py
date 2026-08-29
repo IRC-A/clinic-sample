@@ -7,7 +7,9 @@ import subprocess
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, Response
 
-# FastMCP Metadata
+app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
+
+# FastMCP Tool Metadata Registry for BFA Gateway Discovery
 TOOLS_REGISTRY = {
     "mcp_citas": [
         {
@@ -62,32 +64,7 @@ TOOLS_REGISTRY = {
 }
 
 
-def create_mcp_subapp(key: str):
-    subapp = FastAPI()
-    @subapp.get("/tools")
-    @subapp.get("/")
-    def tools_endpoint():
-        return JSONResponse(content=TOOLS_REGISTRY[key])
-    return subapp
-
-
-main_app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
-
-# Mount Sub-Apps BEFORE any catch-all routes
-main_app.mount("/mcp_citas", create_mcp_subapp("mcp_citas"))
-main_app.mount("/mcp-citas", create_mcp_subapp("mcp_citas"))
-
-main_app.mount("/mcp_staff", create_mcp_subapp("mcp_staff"))
-main_app.mount("/mcp-staff", create_mcp_subapp("mcp_staff"))
-
-main_app.mount("/mcp_ehr", create_mcp_subapp("mcp_ehr"))
-main_app.mount("/mcp-ehr", create_mcp_subapp("mcp_ehr"))
-
-main_app.mount("/mcp_vademecum", create_mcp_subapp("mcp_vademecum"))
-main_app.mount("/mcp-vademecum", create_mcp_subapp("mcp_vademecum"))
-
-
-@main_app.get("/register/auto")
+@app.get("/register/auto")
 async def trigger_register():
     from src.config import config
     gateway_url = config.bfa_gateway_url.rstrip("/")
@@ -124,7 +101,7 @@ async def trigger_register():
 # Background Streamlit Proxying
 STREAMLIT_PORT = 8501
 
-@main_app.on_event("startup")
+@app.on_event("startup")
 async def startup_event():
     # 1. Start Streamlit on port 8501
     subprocess.Popen([
@@ -145,9 +122,18 @@ async def startup_event():
         pass
 
 
-@main_app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501."""
+    """Intercepts FastMCP tool requests or proxies web requests to Streamlit running on port 8501."""
+    clean_path = path.strip("/")
+    
+    # FastMCP Tool Metadata Discovery Endpoint Handling for BFA Gateway
+    if clean_path.startswith("mcp_") or clean_path.startswith("mcp-"):
+        parts = clean_path.split("/")
+        srv_name = parts[0].replace("-", "_")
+        tools = TOOLS_REGISTRY.get(srv_name, [])
+        return JSONResponse(content=tools)
+
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -168,8 +154,6 @@ async def proxy_streamlit(request: Request, path: str):
         except Exception:
             return Response(content="Service Starting...", status_code=503)
 
-
-app = main_app
 
 if __name__ == "__main__":
     import uvicorn
