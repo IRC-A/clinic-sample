@@ -14,7 +14,7 @@ import asyncio
 from datetime import datetime, timezone
 
 from src.config import config
-from src.agents.triage_agent import TriageAgent
+from src.agents.triage.triage import TriageAgent
 from src.agents.pediatria.pediatria import PediatriaAgent
 from src.security.det_validator import verify_det_ticket
 

@@ -6,7 +6,7 @@ import streamlit as st
 
 from src.config import config
 from src.security.det_validator import issue_det_ticket, verify_det_ticket
-from src.agents.triage_agent import TriageAgent
+from src.agents.triage.triage import TriageAgent
 from src.agents.pediatria.pediatria import PediatriaAgent
 
 # Page setup
