@@ -1,11 +1,12 @@
 # The Fortified Healthcare Fleet: Extending Google ADK with IRC-A Zero-Trust Runtime Governance on Google Cloud
 
 [![Google All Things Agentic Hackathon](https://img.shields.io/badge/Google%20Hackathon-The%20Fortified%20Enterprise%20Fleet-4285F4?style=for-the-badge&logo=google)](https://devpost.com)
+[![Prizes](https://img.shields.io/badge/Total%20Prizes-%24750%2C000%20USD-34A853?style=for-the-badge&logo=google)](https://devpost.com)
 [![Google ADK](https://img.shields.io/badge/Google%20ADK-Gemini%203.5-34A853?style=for-the-badge&logo=google)](https://ai.google.dev)
 [![Terraform IaC](https://img.shields.io/badge/Terraform-GCP%20Cloud%20Run-7B42BC?style=for-the-badge&logo=terraform)](https://www.terraform.io)
 [![IRC-A Protocol](https://img.shields.io/badge/IRC--A-Zero--Trust%20Runtime-EA4335?style=for-the-badge)](https://github.com/IRC-A/clinic-sample)
 
-Submitted to the **Google All Things Agentic Hackathon** (Devpost) under the track **"The Fortified Enterprise Fleet"** (Corporate discovery, Zero-Trust runtime access, policy enforcement, Model Armor, and execution isolation).
+Submitted to the **Google All Things Agentic Hackathon** (Devpost, **$750,000 USD Total Prize Pool**) competing for **1st Place ($50,000 USD)** in the track: **"The Fortified Enterprise Fleet"** (Corporate discovery, Zero-Trust runtime access, policy enforcement, Model Armor, and execution isolation).
 
 ---
 
@@ -107,7 +108,7 @@ The entire fleet (BFA Gateway + Streamlit App & Google ADK Agents) can be provis
 ### Manual Terraform Step-by-Step
 ```bash
 # 1. Build & Push App Container Image to GCP
-gcloud builds submit --tag "gcr.io/YOUR_GCP_PROJECT_ID/fortified-healthcare-fleet:latest" -f Dockerfile.app .
+gcloud builds submit --tag "gcr.io/YOUR_GCP_PROJECT_ID/fortified-healthcare-fleet:latest" -f Dockerfile .
 
 # 2. Initialize and Apply Terraform
 cd terraform
@@ -131,7 +132,6 @@ git checkout hackathon/google-adk
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-pip install google-adk google-genai pytest-asyncio
 
 # 2. Run Automated Demo
 ./run_demo.sh
