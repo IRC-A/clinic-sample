@@ -8,7 +8,6 @@ from fastapi import FastAPI, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 
-# FastMCP Tool Metadata Registry for BFA Gateway Discovery
 TOOLS_REGISTRY = {
     "mcp_citas": [
         {
@@ -62,18 +61,102 @@ TOOLS_REGISTRY = {
     ]
 }
 
+AGENTS_CARDS = {
+    "pediatria": {
+        "name": "Pediatria Agent",
+        "description": "Pediatrics specialist: evaluates symptoms in infants and children (fever, measles, mumps, tonsillitis), provides vaccination guidance, growth and nutrition advice, and urgent-care triage.",
+        "version": "1.0.0",
+        "skills": [
+            {
+                "id": "pediatria-agent",
+                "name": "Pediatria Agent",
+                "description": "Pediatrics specialist: evaluates symptoms in infants and children (fever, measles, mumps, tonsillitis), provides vaccination guidance, growth and nutrition advice, and urgent-care triage.",
+                "tags": ["pediatria", "niños", "infantes", "vacunas", "crecimiento"],
+                "examples": [
+                    "mi bebe tiene fiebre y no come",
+                    "¿cuando le toca la proxima vacuna a mi hijo?",
+                    "diagnostico para sospecha de sarampion o angina infantil"
+                ]
+            }
+        ]
+    },
+    "clinica-general": {
+        "name": "Clinica General Agent",
+        "description": "General medicine specialist: evaluates general symptoms (flu, fever, hypertension, abdominal pain), routine checkups, and triage.",
+        "version": "1.0.0",
+        "skills": [
+            {
+                "id": "clinica-general-agent",
+                "name": "Clinica General Agent",
+                "description": "General medicine specialist: evaluates general symptoms (flu, fever, hypertension, abdominal pain), routine checkups, and triage.",
+                "tags": ["clinica", "medicina-general", "gripe", "fiebre", "hipertension"],
+                "examples": [
+                    "tengo mucha tos y dolor de cabeza",
+                    "control de presion arterial para adulto",
+                    "tratamiento para estado gripal"
+                ]
+            }
+        ]
+    },
+    "oncologia": {
+        "name": "Oncologia Agent",
+        "description": "Oncology specialist: evaluates tumor markers, biopsy reports, carcinoma staging, and specialized oncology consultations.",
+        "version": "1.0.0",
+        "skills": [
+            {
+                "id": "oncologia-agent",
+                "name": "Oncologia Agent",
+                "description": "Oncology specialist: evaluates tumor markers, biopsy reports, carcinoma staging, and specialized oncology consultations.",
+                "tags": ["oncologia", "carcinomas", "tumores", "biopsias", "quimioterapia"],
+                "examples": [
+                    "evaluacion de marcadores tumorales en biopsia",
+                    "estadiamiento de carcinoma",
+                    "consulta especializada en oncologia"
+                ]
+            }
+        ]
+    },
+    "triage": {
+        "name": "Triage Agent",
+        "description": "Patient portal & triage assistant: guides patients, checks physician directory, schedules appointments, and enforces zero-trust channel security.",
+        "version": "1.0.0",
+        "skills": [
+            {
+                "id": "triage-agent",
+                "name": "Triage Agent",
+                "description": "Patient portal & triage assistant: guides patients, checks physician directory, schedules appointments, and enforces zero-trust channel security.",
+                "tags": ["triage", "citas", "turnos", "pacientes", "orientacion"],
+                "examples": [
+                    "quiero agendar un turno con pediatria",
+                    "¿quien esta de guardia hoy en la clinica?",
+                    "orientacion inicial para paciente"
+                ]
+            }
+        ]
+    }
+}
+
 
 class MCPDiscoveryMiddleware(BaseHTTPMiddleware):
-    """Starlette BaseHTTPMiddleware running at top of ASGI pipeline before any routing."""
     async def dispatch(self, request: Request, call_next):
-        path = request.url.path.strip("/")
-        
-        if "mcp" in path:
-            parts = path.split("/")
-            raw_node = parts[0].replace("-", "_")
-            srv_key = raw_node if raw_node.startswith("mcp_") else f"mcp_{raw_node}"
-            tools = TOOLS_REGISTRY.get(srv_key, TOOLS_REGISTRY.get(raw_node, []))
-            return JSONResponse(content=tools)
+        try:
+            path_str = str(request.url.path).strip("/")
+            
+            # FastMCP Tools Interceptor
+            if "mcp" in path_str:
+                parts = path_str.split("/")
+                raw_node = parts[0].replace("-", "_")
+                srv_key = raw_node if raw_node.startswith("mcp_") else f"mcp_{raw_node}"
+                tools = TOOLS_REGISTRY.get(srv_key, TOOLS_REGISTRY.get(raw_node, []))
+                return JSONResponse(content=tools, headers={"Content-Type": "application/json"})
+                
+            # Cognitive Agent Discovery Interceptor
+            if "agent" in path_str:
+                for agent_slug, card_data in AGENTS_CARDS.items():
+                    if agent_slug in path_str:
+                        return JSONResponse(content=card_data, headers={"Content-Type": "application/json"})
+        except Exception as e:
+            print(f"[MCP Middleware Error]: {e}")
             
         return await call_next(request)
 
@@ -88,6 +171,7 @@ async def trigger_register():
     gateway_url = config.bfa_gateway_url.rstrip("/")
     base_url = os.getenv("HEALTHCARE_APP_URL", "https://fortified-healthcare-fleet-hmwmve5bjq-uc.a.run.app").rstrip("/")
     
+    # 1. Register FastMCP Servers
     channel_mapping = {
         "mcp_citas": "#citas",
         "mcp_staff": "#staff",
@@ -109,14 +193,36 @@ async def trigger_register():
                     },
                     headers={"Authorization": f"Bearer {config.bfa_api_key}"}
                 )
-                results[srv_name] = {"status": res.status_code, "text": res.text}
+                results[f"tool_{srv_name}"] = {"status": res.status_code, "text": res.text}
             except Exception as e:
-                results[srv_name] = {"status": "error", "message": str(e)}
+                results[f"tool_{srv_name}"] = {"status": "error", "message": str(e)}
+
+        # 2. Register Cognitive Specialist Agents
+        agent_mapping = {
+            "pediatria-agent": (f"{base_url}/agent/pediatria", "#citas,#staff,#historial-medico,#vademecum"),
+            "clinica-general-agent": (f"{base_url}/agent/clinica-general", "#citas,#staff,#historial-medico,#vademecum"),
+            "oncologia-agent": (f"{base_url}/agent/oncologia", "#citas,#staff,#historial-medico,#vademecum"),
+            "triage-agent": (f"{base_url}/agent/triage", "#citas,#staff")
+        }
+
+        for agent_id, (agent_url, channels) in agent_mapping.items():
+            try:
+                res = await client.post(
+                    f"{gateway_url}/register/agent",
+                    params={
+                        "url": agent_url,
+                        "channels": channels,
+                        "node_id": agent_id
+                    },
+                    headers={"Authorization": f"Bearer {config.bfa_api_key}"}
+                )
+                results[f"agent_{agent_id}"] = {"status": res.status_code, "text": res.text}
+            except Exception as e:
+                results[f"agent_{agent_id}"] = {"status": "error", "message": str(e)}
 
     return JSONResponse(content=results)
 
 
-# Background Streamlit Proxying
 STREAMLIT_PORT = 8501
 
 @app.on_event("startup")
@@ -142,7 +248,6 @@ async def startup_event():
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:

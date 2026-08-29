@@ -23,7 +23,8 @@ class PediatriaAgent(BFAAgent):
     """
 
     def __init__(self, doctor_id: str = "MED-301", url: Optional[str] = None, api_key: Optional[str] = None):
-        agent_url = url or os.getenv("PEDIATRIA_PUBLIC_URL", os.getenv("AGENT_URL", "http://127.0.0.1:8004"))
+        base_app_url = os.getenv("HEALTHCARE_APP_URL", "https://fortified-healthcare-fleet-hmwmve5bjq-uc.a.run.app").rstrip("/")
+        agent_url = url or os.getenv("PEDIATRIA_PUBLIC_URL", f"{base_app_url}/agent/pediatria")
         gateway_url = config.bfa_gateway_url
 
         super().__init__(

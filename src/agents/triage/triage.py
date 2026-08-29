@@ -21,7 +21,8 @@ class TriageAgent(BFAAgent):
     """
 
     def __init__(self, url: Optional[str] = None, api_key: Optional[str] = None):
-        agent_url = url or os.getenv("TRIAGE_PUBLIC_URL", os.getenv("PUBLIC_URL", "http://127.0.0.1:8003"))
+        base_app_url = os.getenv("HEALTHCARE_APP_URL", "https://fortified-healthcare-fleet-hmwmve5bjq-uc.a.run.app").rstrip("/")
+        agent_url = url or os.getenv("TRIAGE_PUBLIC_URL", f"{base_app_url}/agent/triage")
         gateway_url = config.bfa_gateway_url
 
         super().__init__(
