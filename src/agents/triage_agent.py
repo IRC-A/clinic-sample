@@ -75,7 +75,7 @@ class TriageAgent:
         elif func_name == "agendar_turno":
             det = issue_det_ticket(self.agent_id, "#citas", args)
             return agendar_turno(
-                paciente_nombre=args.get("paciente_nombre", "Patient"),
+                paciente_nombre=args.get("paciente_nombre", "Juan Pérez"),
                 paciente_id=args.get("paciente_id", "101"),
                 medico_id=args.get("medico_id", "MED-301"),
                 especialidad=args.get("especialidad", "Pediatrics"),
@@ -102,7 +102,7 @@ class TriageAgent:
 
     async def run(self, user_message: str) -> Dict[str, Any]:
         """Runs the agent with prompt injection check & tool calling simulation."""
-        lowered = user_message.lower()
+        lowered = user_message.lower().strip()
 
         # Prompt injection check
         if any(kw in lowered for kw in ["historial", "history", "records", "paciente 101", "patient 101", "ignore previous", "ignora las instrucciones"]):
@@ -119,7 +119,21 @@ class TriageAgent:
         tool_res_str = ""
         tool_data = None
 
-        if any(kw in lowered for kw in ["guardia", "on-call", "duty", "emergency", "urgencia"]):
+        # Check for booking confirmation (e.g. "si", "yes", "confirm", "confirmo", "ok", "por favor", "book")
+        if lowered in ["si", "sí", "yes", "confirm", "confirmo", "ok", "por favor", "sure", "yep", "agendar", "confirmar"] or any(kw in lowered for kw in ["confirm appointment", "book appointment", "agendar turno"]):
+            tool_res_str = self.resolve_tool_request("agendar_turno", {
+                "paciente_nombre": "Juan Pérez",
+                "paciente_id": "101",
+                "medico_id": "MED-301",
+                "especialidad": "Pediatrics",
+                "fecha": "2026-08-28",
+                "hora": "10:00"
+            })
+            try:
+                tool_data = json.loads(tool_res_str)
+            except Exception:
+                pass
+        elif any(kw in lowered for kw in ["guardia", "on-call", "duty", "emergency", "urgencia"]):
             tool_res_str = self.resolve_tool_request("consultar_guardia", {"especialidad": "Pediatrics" if "pedia" in lowered else ""})
             try:
                 tool_data = json.loads(tool_res_str)
@@ -140,7 +154,7 @@ class TriageAgent:
                     f"User Query: '{user_message}'\n\n"
                     f"System Data (#citas / #staff): {tool_res_str}\n\n"
                     "Instruction: Respond to the user in a warm, natural, professional English tone. "
-                    "Inform available appointment slots/doctors clearly with date, time, and doctor name. DO NOT output raw JSON."
+                    "If an appointment was scheduled/confirmed, inform the patient clearly with doctor name, date, time, and appointment ID. DO NOT output raw JSON."
                 )
                 response = self.client.models.generate_content(
                     model=self.model,
@@ -167,6 +181,25 @@ class TriageAgent:
         """Formats tool results into warm, natural, human English text."""
         if not tool_data:
             return "Hello! Welcome to Dr. Cureta Clinic. How can I help you find a specialist or schedule an appointment today?"
+
+        # Format appointment confirmation (agendar_turno)
+        if tool_data.get("status") == "confirmed" or "booking" in tool_data:
+            b = tool_data.get("booking", {})
+            app_id = b.get("appointment_id", "TUR-101")
+            p_name = b.get("patient_name", "Juan Pérez")
+            spec = b.get("specialty", "Pediatrics")
+            dt = b.get("date", "2026-08-28")
+            tm = b.get("time", "10:00")
+            doc = "Dr. Ana López"
+
+            return (
+                f"🎉 **Appointment Successfully Confirmed!**\n\n"
+                f"• **Patient:** {p_name}\n"
+                f"• **Specialty:** {spec} ({doc})\n"
+                f"• **Date & Time:** {dt} at {tm} hs\n"
+                f"• **Confirmation Reference ID:** `{app_id}`\n\n"
+                f"Your appointment has been registered in the clinic schedule. We look forward to seeing you! Is there anything else I can assist you with?"
+            )
 
         if "available_slots" in tool_data or "turnos_disponibles" in tool_data:
             slots = tool_data.get("available_slots") or tool_data.get("turnos_disponibles") or []
