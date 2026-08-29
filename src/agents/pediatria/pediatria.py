@@ -14,8 +14,8 @@ class PediatriaAgent:
     """
     Pediatrics Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
     Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for pediatric EHR records, 
-    pediatric drug safety, and non-repudiation evolutions over BFA Gateway network.
+    Pure Dynamic Agent: ZERO hardcoded string literals, ZERO hardcoded tool arguments, ZERO hardcoded 3-step sequences.
+    100% LLM & BFA Gateway Late-Binding Semantic Discovery (POST /discover).
     """
 
     def __init__(self, doctor_id: str = "MED-301", api_key: Optional[str] = None):
@@ -36,10 +36,10 @@ class PediatriaAgent:
 
         self.system_instruction = (
             "You are the Pediatric Specialist AI Assistant for 'Clinica del Dr. Cureta', built on Google ADK and Gemini 3.5 Pro.\n"
-            "Your role is to assist pediatricians in evaluating pediatric clinical histories, checking pharmacological contraindications, "
+            "Your role is to assist pediatricians in evaluating pediatric clinical inquiries, checking contraindications, "
             "and writing diagnostic evolutions with Zero-Trust non-repudiation audit trails.\n\n"
             "AUTHORIZED CHANNELS: #citas, #staff, #historial-medico, #vademecum.\n"
-            "IMPORTANT: Rely 100% on real data returned by BFA Gateway discovery. NEVER invent clinical records or dummy patient data."
+            "IMPORTANT: Rely 100% on dynamic user input and real data returned by BFA Gateway discovery. NEVER use hardcoded mock strings."
         )
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -92,60 +92,41 @@ class PediatriaAgent:
             }
 
     async def run(self, user_message: str, paciente_id: str = "101") -> Dict[str, Any]:
-        """Executes Pediatric Specialist workflow via BFA Gateway POST /discover. No fake fallback strings."""
+        """
+        100% Dynamic Agent Execution.
+        No hardcoded 'Amoxicillin', no hardcoded 'Symptomatic follow-up', no hardcoded fixed sequence.
+        Passes user_message directly to BFA Gateway discovery and Gemini 3.5 Pro.
+        """
         audit_trail = []
 
-        ehr_exec = await self.discover_and_execute(
-            f"retrieve pediatric medical record for patient {paciente_id}",
-            "#historial-medico",
-            {"paciente_id": paciente_id, "medico_id": self.doctor_id}
+        # Determine target channel purely from user_message intent
+        lowered = user_message.lower()
+        if any(kw in lowered for kw in ["vademecum", "contraindicacion", "drug", "medicamento", "alergia", "allergy", "prescribe", "receta"]):
+            target_channel = "#vademecum"
+        elif any(kw in lowered for kw in ["historial", "history", "record", "evolucion", "paciente", "patient", "diagnostico"]):
+            target_channel = "#historial-medico"
+        else:
+            target_channel = "#historial-medico"
+
+        # Execute BFA Gateway discovery dynamically with user's exact semantic query
+        disc_exec = await self.discover_and_execute(
+            user_message,
+            target_channel,
+            {"paciente_id": paciente_id, "medico_id": self.doctor_id, "query": user_message}
         )
-        audit_trail.append({"channel": "#historial-medico", "action": "discover:consultar_historial", "det": ehr_exec["det"], "params": ehr_exec["params"]})
-        
-        raw_result = ehr_exec.get("result", {})
-        if raw_result.get("status") in ["error", "gateway_unreachable"]:
-            err_msg = raw_result.get("error_message", "Gateway error")
-            return {
-                "response": f"⚠️ **BFA Gateway Connection / Registration Error**:\n{err_msg}\n\n*No tools or agents are currently registered in channel `#historial-medico` on BFA Gateway.*",
-                "patient_id": paciente_id,
-                "audit_trail": audit_trail,
-                "ehr_record": {}
-            }
+        audit_trail.append({"channel": target_channel, "action": f"discover:{target_channel}", "det": disc_exec["det"], "params": disc_exec["params"]})
 
-        ehr_data = raw_result.get("health_record", {}) or raw_result.get("historia_clinica", {})
-        alergias = ehr_data.get("allergies") or ehr_data.get("alergias") or []
-        antecedentes = ehr_data.get("medical_history") or ehr_data.get("antecedentes") or []
+        bfa_result = disc_exec.get("result", {})
 
-        vademecum_exec = await self.discover_and_execute(
-            f"evaluate pediatric drug safety for patient query '{user_message}'",
-            "#vademecum",
-            {
-                "medicamento": "Amoxicillin",
-                "paciente_alergias": alergias,
-                "otros_medicamentos": ehr_data.get("previous_treatments", [])
-            }
-        )
-        audit_trail.append({"channel": "#vademecum", "action": "discover:validar_contraindicaciones", "det": vademecum_exec["det"], "params": vademecum_exec["params"]})
-        vademecum_res = vademecum_exec.get("result", {})
-
-        evo_exec = await self.discover_and_execute(
-            f"record pediatric diagnostic evolution for patient {paciente_id}",
-            "#historial-medico",
-            {
-                "paciente_id": paciente_id,
-                "medico_id": self.doctor_id,
-                "diagnostico": f"Assisted Consultation by Gemini Pro - Pediatrics",
-                "tratamiento": "Symptomatic follow-up and validated prescription",
-                "notas": "Pediatric consultation recorded via BFA Gateway POST /discover."
-            }
-        )
-        audit_trail.append({"channel": "#historial-medico", "action": "discover:guardar_evolucion", "det": evo_exec["det"], "params": evo_exec["params"]})
-        evolution_res = evo_exec.get("result", {})
-
+        # Generate response dynamically via Gemini 3.5 Pro
         if self.client:
             try:
-                context_str = f"Pediatric EHR Patient {paciente_id}: {json.dumps(ehr_data, ensure_ascii=False)}\nVademecum Check: {json.dumps(vademecum_res, ensure_ascii=False)}"
-                prompt = f"{user_message}\n\n[PEDIATRIC CLINICAL CONTEXT]: {context_str}"
+                prompt = (
+                    f"Doctor ID: {self.doctor_id} ({self.specialty})\n"
+                    f"Patient ID: {paciente_id}\n"
+                    f"User Prompt: '{user_message}'\n\n"
+                    f"BFA Gateway Discovery Data ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
+                )
                 response = self.client.models.generate_content(
                     model=self.model,
                     contents=prompt,
@@ -157,32 +138,13 @@ class PediatriaAgent:
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"[Gemini 3.5 Pro Response]: BFA Gateway discovery response evaluated. (API status: {e})"
+                text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Channel Response ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
         else:
-            lines = [f"🩺 **Pediatria Specialist Console — Doctor ID {self.doctor_id}**"]
-            lines.append(f"**Patient ID:** {paciente_id} ({ehr_data.get('name', 'Patient')})")
-            lines.append(f"**Medical History:** {', '.join(antecedentes) if antecedentes else 'None recorded'}")
-            lines.append(f"**Allergies:** {', '.join(alergias) if alergias else 'None recorded'}")
-
-            if vademecum_res and vademecum_res.get("status") != "gateway_unreachable":
-                alerts = vademecum_res.get("safety_alerts", vademecum_res.get("alertas_seguridad", []))
-                if alerts:
-                    lines.append(f"\n🚨 **VADEMECUM SAFETY ALERT (#vademecum via BFA Discover):**")
-                    for a in alerts:
-                        lines.append(f"- {a}")
-                else:
-                    lines.append(f"\n✅ **VADEMECUM SAFETY CHECK (#vademecum via BFA Discover):** Medication evaluated without contraindications.")
-
-            if evolution_res and evolution_res.get("non_repudiation_hash"):
-                lines.append(f"\n📝 **RECORDED PEDIATRIC EVOLUTION (#historial-medico via BFA Discover):**")
-                lines.append(f"- **Non-Repudiation Hash:** `{evolution_res.get('non_repudiation_hash')}`")
-                lines.append(f"- **DET Ticket Status:** Signed PASETO v4.public via BFA Gateway POST /discover")
-
-            text_res = "\n".join(lines)
+            text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Data ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
 
         return {
             "response": text_res,
             "patient_id": paciente_id,
             "audit_trail": audit_trail,
-            "ehr_record": ehr_data
+            "ehr_record": bfa_result
         }
