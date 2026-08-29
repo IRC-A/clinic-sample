@@ -1,165 +1,155 @@
-# 🏥 Clinic Sample — Arquitectura Multi-Agente con BFA Gateway & MCP
+# The Fortified Healthcare Fleet: Extending Google ADK with IRC-A Zero-Trust Runtime Governance on Google Cloud
 
-Este repositorio contiene la implementación de referencia para la serie de artículos en **Dev.TO** sobre **Arquitecturas Multi-Agente en Salud**.
+[![Google All Things Agentic Hackathon](https://img.shields.io/badge/Google%20Hackathon-The%20Fortified%20Enterprise%20Fleet-4285F4?style=for-the-badge&logo=google)](https://devpost.com)
+[![Google ADK](https://img.shields.io/badge/Google%20ADK-Gemini%203.5-34A853?style=for-the-badge&logo=google)](https://ai.google.dev)
+[![Terraform IaC](https://img.shields.io/badge/Terraform-GCP%20Cloud%20Run-7B42BC?style=for-the-badge&logo=terraform)](https://www.terraform.io)
+[![IRC-A Protocol](https://img.shields.io/badge/IRC--A-Zero--Trust%20Runtime-EA4335?style=for-the-badge)](https://github.com/IRC-A/clinic-sample)
 
-El proyecto demuestra cómo coordinar múltiples agentes inteligentes y servidores de herramientas (MCP) utilizando el **BFA Gateway**, ofreciendo una experiencia conversacional fluida con memoria de sesión, reducción de contexto, ruteo por intención y reserva automatizada de turnos.
+Submitted to the **Google All Things Agentic Hackathon** (Devpost) under the track **"The Fortified Enterprise Fleet"** (Corporate discovery, Zero-Trust runtime access, policy enforcement, Model Armor, and execution isolation).
 
 ---
 
-## 🏛️ Arquitectura del Sistema
+## 📌 Features and Functionality
+
+High-stakes corporate environments—such as clinical healthcare, financial systems, and enterprise legal ops—demand strict runtime access control and deterministic security bounds for autonomous AI agent fleets. While LLM-driven agents powered by **Google ADK** provide remarkable cognitive reasoning, raw agent execution without network-level isolation risks prompt injection attacks, unauthorized scope creep, and data leakage.
+
+**The Fortified Healthcare Fleet** solves this by pairing **Google ADK (Gemini 3.5 Flash & Gemini 3.5 Pro)** with **IRC-A (Internet Relay Chat for Agents)** protocol and the **BFA (Backend for Agents)** design pattern deployed on **Google Cloud Platform (GCP)** via **Terraform Infrastructure as Code (IaC)**.
+
+- **Official Repositories:**
+  - **BFA Gateway Infrastructure:** [`https://github.com/IRC-A/bfa-gateway`](https://github.com/IRC-A/bfa-gateway)
+  - **Fortified Healthcare Fleet App:** [`https://github.com/IRC-A/clinic-sample`](https://github.com/IRC-A/clinic-sample)
+- **Dual-View Web Interface (`app.py`):**
+  - **Patient Triage Portal:** Allows patients to query medical specialties, check on-call doctors, and book appointments via Gemini 3.5 Flash.
+  - **Specialist Medical Console:** Empowers licensed doctors to consult EHR clinical records, evaluate drug interactions in the vademecum, and record diagnostic evolutions via Gemini 3.5 Pro.
+- **Zero-Trust Live Audit Panel:** Real-time visual sidebar logging active agent identities, channel permission masks, GCP FAISS semantic discovery traces, and PASETO v4.public ephemeral DET ticket inspection.
+- **Prompt Injection & Scope Creep Neutralization:** Indirect prompt injections attempting to extract confidential medical records through public triage channels are automatically blocked by GCP BFA Gateway channel masking.
+- **Non-Repudiation Audit Logs:** Clinical evolutions are written with SHA-256 parameter digests and signed PASETO v4 tickets.
+
+---
+
+## 🏗️ System Architecture Diagram
 
 ```mermaid
 graph TD
-    User([Paciente]) <--> UI[Streamlit UI / App]
-    UI <--> MainAgent[Main Agent - BFAInteractiveAgent]
+    UI[Streamlit Dual-View Interface app.py] -->|Patient Queries| TA[Triage Agent - Gemini 3.5 Flash]
+    UI -->|Doctor Consultations| DA[Doctor Agent - Gemini 3.5 Pro]
     
-    subgraph "BFA Network (Coordination & Discovery)"
-        MainAgent <--> Gateway[BFA Gateway - Docker :8000]
-        Gateway <--> Triage[Agente de Triage :8003]
-        Gateway <--> Pediatria[Agente Pediatría :8004]
-        Gateway <--> Clinica[Agente Clínica General :8005]
-        Gateway <--> Oncologia[Agente Oncología :8006]
-        Gateway <--> BookingMCP[Booking MCP Server :8010]
+    subgraph Google Cloud Platform GCP
+        BFA[BFA Gateway - Cloud Run Service]
+        FAISS[FAISS Vector Registry - Late-Binding Discovery]
+        POLICY[Zero-Trust Policy Engine & Channel Masking]
+        DET[PASETO v4.public Ephemeral Ticket Issuer]
+        
+        BFA --> FAISS
+        BFA --> POLICY
+        BFA --> DET
     end
+    
+    TA -->|Channel Mask: #citas, #staff| BFA
+    DA -->|Channel Mask: #citas, #staff, #historial-medico, #vademecum| BFA
+    
+    BFA -->|Verified Token| MCP1[mcp_citas - #citas]
+    BFA -->|Verified Token| MCP2[mcp_staff - #staff]
+    BFA -->|Verified Token| MCP3[mcp_ehr - #historial-medico]
+    BFA -->|Verified Token| MCP4[mcp_vademecum - #vademecum]
 ```
 
-### Componentes Principales
-
-1. **BFA Gateway (`sandrog77/bfa-gateway`)**: Servidor central en Docker encargado del descubrimiento de agentes, intercambio criptográfico de llaves (ED25519) y ruteo semántico de consultas.
-2. **Main Agent (`main_agent.py`)**: Agente interactivo basado en `BFAInteractiveAgent`.
-   - **Memoria de Sesión (`MemoryStack`)**: Mantiene el historial completo de la conversación por usuario.
-   - **Reducción de Contexto (LLM Reducer)**: Consolida el historial en un *query* atómico y sin redundancias antes de enviar la solicitud al Gateway.
-   - **Sintetizador de Respuesta**: Transforma las respuestas técnicas o de herramientas en mensajes cálidos y empáticos para el paciente.
-3. **Agente de Triage (`triage.py`)**: Evalúa la sintomatología inicial y encausa la atención al departamento médico correcto.
-4. **Agentes Especialistas**:
-   - **Pediatría (`pediatria.py`)**
-   - **Clínica General (`clinica_general.py`)**
-   - **Oncología (`oncologia.py`)**
-5. **Servidor MCP de Turnos (`booking_mcp.py`)**: Servidor basado en `BFAMCP` / `FastMCP` que expone la herramienta `agendar_turno` para reservar citas médicas.
-6. **Interfaz Web (`streamlit_chat.py`)**: Chat conversacional construido en Streamlit.
-
 ---
 
-## 📋 Requisitos Previos
+## ⚡ BFA Gateway Discovery & Onboarding Patterns
 
-- **Docker / Docker Desktop** (para el BFA Gateway).
-- **Python 3.10+**
-- **OpenAI API Key** (configurada en el archivo `.env`).
+The solution supports two dynamic discovery & onboarding modes for FastMCP tool servers and Google ADK agents:
 
----
+1. **Auto-Registration via `.env`:**
+   When configured with `BFA_GATEWAY_URL=https://irc-a-gateway-hmwmve5bjq-uc.a.run.app`, agents and FastMCP servers automatically register their node identity, channel masks, and tool descriptions with the remote BFA Gateway during startup initialization.
 
-## 🚀 Guía de Inicio Rápido
-
-### 1. Clonar el Repositorio
+2. **Hot-Onboarding via cURL (On-the-Fly Registration):**
+   If a gateway URL is not set in environment variables at boot time, new tools and agents can be onboarded dynamically in production ("hot-onboarding") by sending a JSON payload via `cURL` to the GCP BFA Gateway endpoint without restarting any services:
 
 ```bash
+curl -X POST "https://irc-a-gateway-hmwmve5bjq-uc.a.run.app/api/v1/registry/onboard" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer bfa_gcp_hackathon_demo_key_2026" \
+     -d '{
+           "node_id": "mcp-laboratorio",
+           "channel": "#laboratorio",
+           "name": "mcp_laboratorio",
+           "description": "Deterministic clinical laboratory analysis lookup",
+           "endpoint": "http://127.0.0.1:8015/mcp"
+         }'
+```
+
+---
+
+## 🛠️ Infrastructure as Code (Terraform) & Tech Stack
+
+- **Infrastructure as Code:** Terraform (`terraform/main.tf`, `variables.tf`, `outputs.tf`).
+- **Official Repositories:** [`IRC-A/bfa-gateway`](https://github.com/IRC-A/bfa-gateway) & [`IRC-A/clinic-sample`](https://github.com/IRC-A/clinic-sample).
+- **AI Model Stack:** Gemini 3.5 Flash (low-latency triage) and Gemini 3.5 Pro (deep clinical reasoning).
+- **Agent Framework:** Google ADK (`google-adk`), Google GenAI SDK (`google-genai`).
+- **Cloud Infrastructure:** Google Cloud Platform (GCP) Cloud Run (`BFA_GATEWAY_URL`), Vertex AI / Google AI Studio API.
+- **Network & Governance:** IRC-A Protocol, BFA Architecture.
+- **Security & Authorization:** PASETO v4.public (Ed25519) Ephemeral DET Tickets, `pyseto`, `cryptography`.
+- **Tool Protocol:** FastMCP (`fastmcp`), A2A Standard.
+- **User Interface:** Streamlit 1.42+ (`app.py`).
+
+---
+
+## ☁️ Google Cloud Deployment Instructions (Terraform)
+
+The entire fleet (BFA Gateway + Streamlit App & Google ADK Agents) can be provisioned and deployed to **Google Cloud Run** using Terraform IaC:
+
+### Automated GCP Terraform Deployment Script
+```bash
+./deploy_gcp.sh
+```
+
+### Manual Terraform Step-by-Step
+```bash
+# 1. Build & Push App Container Image to GCP
+gcloud builds submit --tag "gcr.io/YOUR_GCP_PROJECT_ID/fortified-healthcare-fleet:latest" -f Dockerfile.app .
+
+# 2. Initialize and Apply Terraform
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your GCP project_id and GEMINI_API_KEY
+
+terraform init
+terraform apply -auto-approve
+```
+
+---
+
+## 🚀 Local Spin-Up Instructions
+
+```bash
+# 1. Clone repo & activate environment
 git clone https://github.com/IRC-A/clinic-sample.git
 cd clinic-sample
-```
+git checkout hackathon/google-adk
 
-### 2. Iniciar el BFA Gateway (Docker)
-
-El BFA Gateway se distribuye listo para usar desde DockerHub:
-
-```bash
-docker pull sandrog77/bfa-gateway
-docker run -d -p 8000:8000 --name bfa-gateway sandrog77/bfa-gateway
-```
-
-### 3. Configurar el Entorno de Python y Variables de Entorno
-
-```bash
-# Crear y activar entorno virtual
 python3 -m venv .venv
 source .venv/bin/activate
-
-# Instalar dependencias
 pip install -r requirements.txt
-```
+pip install google-adk google-genai pytest-asyncio
 
-Crea un archivo `.env` en la raíz del proyecto (puedes basarte en el archivo de ejemplo) y coloca tu clave de OpenAI:
+# 2. Run Automated Demo
+./run_demo.sh
 
-```bash
-BFA_GATEWAY_URL=http://localhost:8000/
-OPENAI_API_KEY=sk-tu-api-key-aqui
-HOSPITAL_NAME="La Clínica del Dr. Cureta"
-```
-
-### 4. Iniciar Todos los Agentes y el Servidor MCP
-
-Ejecuta el script automatizado para lanzar todos los agentes en segundo plano:
-
-```bash
-chmod +x scripts/start_all_agents.sh scripts/stop_all_agents.sh
-./scripts/start_all_agents.sh
-```
-
-Este script iniciará:
-- `triage` en `http://0.0.0.0:8003`
-- `pediatria` en `http://0.0.0.0:8004`
-- `clinica_general` en `http://0.0.0.0:8005`
-- `oncologia` en `http://0.0.0.0:8006`
-- `booking_mcp` en `http://0.0.0.0:8010`
-- `main_agent` en `http://0.0.0.0:8310`
-
-### 5. Lanzar la Interfaz de Usuario (Streamlit)
-
-En una nueva terminal (con el entorno virtual activado):
-
-```bash
-streamlit run apps/streamlit_chat.py
-```
-
-Abre tu navegador en `http://localhost:8501` para comenzar a interactuar con la clínica.
-
----
-
-## 🛑 Detener los Servicios
-
-Para apagar todos los agentes en segundo plano:
-
-```bash
-./scripts/stop_all_agents.sh
-```
-
-Para detener el contenedor del Gateway:
-
-```bash
-docker stop bfa-gateway
+# 3. Launch Streamlit Web UI
+streamlit run app.py
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📹 Demo Video Outline (~4 min)
 
-```text
-.
-├── apps/
-│   └── streamlit_chat.py        # Interfaz de usuario Streamlit
-├── scripts/
-│   ├── start_all_agents.sh      # Script de inicio masivo de agentes
-│   └── stop_all_agents.sh       # Script de apagado de agentes
-├── src/
-│   └── agents/
-│       ├── main_agent/          # Agente Interactivo Frontend (Reducción + Sintetización)
-│       ├── triage/              # Agente de Triage y enrutamiento inicial
-│       ├── pediatria/           # Agente Especialista en Pediatría
-│       ├── clinica_general/     # Agente Especialista en Clínica General
-│       ├── oncologia/           # Agente Especialista en Oncología
-│       └── booking_mcp/         # Servidor MCP para reserva de turnos
-├── .env                         # Variables de entorno globales
-├── prompt_articulo_devto.md     # Prompt guía para la redacción del post en Dev.TO
-└── README.md
-```
+1. **0:00 - 0:45 (Problem & Overview):** Enterprise AI security challenges, prompt injection risks in healthcare, and introduction of **The Fortified Healthcare Fleet** using Google ADK & Gemini 3.5 on Google Cloud.
+2. **0:45 - 2:00 (Flow A - Legitimate Ops):** Patient uses Triage Portal to book appointment $\rightarrow$ Specialist Doctor opens Medical Console, reviews EHR history, validates vademecum contraindications, and persists diagnostic evolution with PASETO v4.public DET signature.
+3. **2:00 - 3:15 (Flow B - Injection Defense):** Attacker attempts prompt injection via Triage chat to extract confidential EHR records $\rightarrow$ Zero-Trust BFA Gateway blocks channel resolution, neutralizing attack.
+4. **3:15 - 4:00 (GCP Proof & Terraform IaC):** Demonstration of Cloud Run production endpoint (`https://irc-a-gateway-hmwmve5bjq-uc.a.run.app`), Terraform deployment pipeline, live DET inspector, and FAISS vector discovery trace.
 
 ---
 
-## 📖 Artículo en Dev.TO
-
-Este repositorio acompaña el artículo detallado publicado en Dev.TO. Consulta el archivo `prompt_articulo_devto.md` para ver el esquema explicativo paso a paso.
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia [MIT](LICENSE).
+## 📄 License & Credits
+Submitted to the **Google All Things Agentic Hackathon** by the **IRC-A Open Protocol Team**. Powered by Google ADK, Gemini 3.5 Flash/Pro, and Google Cloud Platform.

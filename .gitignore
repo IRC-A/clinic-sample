@@ -1,19 +1,39 @@
+# Python bytecode & caches
 __pycache__/
 *.pyc
-# Environment files (ignore any .env in repo or subfolders)
-.env
-**/.env
-.env.*
+*.pyo
 
 # Virtual environments
-.venv
-**/.venv
+.venv/
+**/.venv/
 venv/
+env/
 
-# Local history (editors / tools)
+# Environment and Secret files
+.env
+**/.env
+.env.local
+.env.*
+!*.env.example
+
+# Terraform state & credentials (STRICT SAFETY - NEVER COMMIT SECRETS)
+terraform/terraform.tfvars
+terraform/*.tfvars
+!terraform/terraform.tfvars.example
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Cryptographic Private Keys
+keys/
+*.pem
+!keys/gateway_public.pem
+
+# Local history & logs
 .history/
 dist/
 build/
 *.egg-info
-
-logs
+logs/
+.agent_pids
