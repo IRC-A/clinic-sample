@@ -8,6 +8,8 @@ from src.config import config
 from src.security.det_validator import issue_det_ticket, verify_det_ticket
 from src.agents.triage.triage import TriageAgent
 from src.agents.pediatria.pediatria import PediatriaAgent
+from src.agents.clinica_general.clinica_general import ClinicaGeneralAgent
+from src.agents.oncologia.oncologia import OncologiaAgent
 
 # Page setup
 st.set_page_config(
@@ -85,7 +87,7 @@ if "messages_triage" not in st.session_state:
 
 if "messages_doctor" not in st.session_state:
     st.session_state.messages_doctor = [
-        {"role": "assistant", "content": "🩺 **Pediatria Specialist Agent (Google ADK / Gemini 3.5 Pro)** initialized. Select a Patient ID to evaluate clinical history, check drug contraindications in vademecum, and record signed diagnostic evolutions."}
+        {"role": "assistant", "content": "🩺 **Domain Specialist Console (Google ADK / Gemini 3.5 Pro)** initialized. Select a specialty (Pediatría, Clínica General, Oncología) and Patient ID to evaluate clinical history, check drug contraindications in vademecum, and record signed diagnostic evolutions."}
     ]
 
 # Sidebar — Zero-Trust Live Audit Panel
@@ -98,14 +100,14 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### **Active Identity & Channel Masking**")
 
-    active_view = st.radio("Select View / User Role", ["Patient Portal (Triage Agent)", "Pediatria Specialist Agent"])
+    active_view = st.radio("Select View / User Role", ["Patient Portal (Triage Agent)", "Domain Specialist Console (Gemini 3.5 Pro)"])
 
     if active_view == "Patient Portal (Triage Agent)":
         active_role = "triage-agent (Gemini 3.5 Flash)"
         authorized = ["#citas", "#staff"]
         denied = ["#historial-medico", "#vademecum"]
     else:
-        active_role = "pediatria-agent (Gemini 3.5 Pro)"
+        active_role = "specialist-agent (Gemini 3.5 Pro)"
         authorized = ["#citas", "#staff", "#historial-medico", "#vademecum"]
         denied = []
 
@@ -125,7 +127,7 @@ with st.sidebar:
     st.markdown("#### **Live DET Ticket Inspector (PASETO v4.public)**")
     
     sample_det = issue_det_ticket(
-        agent_id="triage-agent" if "Triage" in active_view else "pediatria-agent",
+        agent_id="triage-agent" if "Triage" in active_view else "specialist-agent",
         channel="#citas" if "Triage" in active_view else "#historial-medico",
         params={"patient_id": "101", "timestamp": datetime.now(timezone.utc).isoformat()}
     )
@@ -147,7 +149,7 @@ st.markdown('<div class="main-title">The Fortified Healthcare Fleet</div>', unsa
 st.markdown('<div class="sub-title">Google ADK & Gemini 3.5 with IRC-A Zero-Trust Runtime Governance on Google Cloud</div>', unsafe_allow_html=True)
 
 if active_view == "Patient Portal (Triage Agent)":
-    st.subheader("🤖 View 1: Patient Portal (Triage Agent)")
+    st.subheader("🤖 View 1: Patient Portal (Triage Agent - Gemini 3.5 Flash)")
     st.info("💡 **Authorized Channels:** `#citas`, `#staff`. **Zero-Trust Enforcement:** Access attempts to `#historial-medico` will be masked and rejected.")
 
     for msg in st.session_state.messages_triage:
@@ -172,19 +174,22 @@ if active_view == "Patient Portal (Triage Agent)":
         st.session_state.messages_triage.append({"role": "assistant", "content": result["response"]})
 
 else:
-    st.subheader("🩺 View 2: Pediatria Specialist Agent Console")
-    st.success("🔒 **Medical Authentication:** Active National Pediatric License. **Authorized Channels:** `#citas`, `#staff`, `#historial-medico`, `#vademecum`.")
+    st.subheader("🩺 View 2: Domain Specialist Medical Console (Gemini 3.5 Pro)")
+    st.success("🔒 **Medical Authentication:** Active National Medical License. **Authorized Channels:** `#citas`, `#staff`, `#historial-medico`, `#vademecum`.")
 
     col1, col2 = st.columns([1, 2])
 
     with col1:
+        st.markdown("#### **Specialist Selection**")
+        especialidad_sel = st.selectbox("Select Specialty Domain Agent", ["Pediatría", "Clínica General", "Oncología"], index=0)
+        
         st.markdown("#### **Patient Chart**")
         paciente_id = st.selectbox("Select Patient", ["101", "102"], index=0)
-        medico_id = st.text_input("Doctor ID", value="MED-301")
+        medico_id = st.text_input("Doctor ID", value="MED-301" if especialidad_sel == "Pediatría" else ("MED-201" if especialidad_sel == "Clínica General" else "MED-401"))
 
         st.markdown("#### **Quick Actions**")
         btn_historial = st.button("📄 Consult Clinical History", use_container_width=True)
-        btn_vademecum = st.button("💊 Validate Amoxicillin Prescription", use_container_width=True)
+        btn_vademecum = st.button("💊 Validate Medication Safety", use_container_width=True)
 
     with col2:
         for msg in st.session_state.messages_doctor:
@@ -197,7 +202,7 @@ else:
         if btn_historial:
             query = f"Consult complete clinical history for patient {paciente_id}"
         elif btn_vademecum:
-            query = f"Validate Amoxicillin prescription for patient {paciente_id}"
+            query = f"Validate medication safety and contraindications for patient {paciente_id}"
         elif doctor_input:
             query = doctor_input
 
@@ -207,9 +212,15 @@ else:
                 st.markdown(query)
 
             with st.chat_message("assistant"):
-                with st.spinner("Deep Clinical Reasoning with Gemini 3.5 Pro..."):
-                    pediatria_agent = PediatriaAgent(doctor_id=medico_id)
-                    res = asyncio.run(pediatria_agent.run(query, paciente_id=paciente_id))
+                with st.spinner(f"Deep Clinical Reasoning with {especialidad_sel} Agent (Gemini 3.5 Pro)..."):
+                    if especialidad_sel == "Pediatría":
+                        agent_inst = PediatriaAgent(doctor_id=medico_id)
+                    elif especialidad_sel == "Clínica General":
+                        agent_inst = ClinicaGeneralAgent(doctor_id=medico_id)
+                    else:
+                        agent_inst = OncologiaAgent(doctor_id=medico_id)
+
+                    res = asyncio.run(agent_inst.run(query, paciente_id=paciente_id))
                     st.markdown(res["response"])
 
                     if res.get("audit_trail"):
