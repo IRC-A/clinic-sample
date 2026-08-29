@@ -1,6 +1,9 @@
 # Multi-stage Dockerfile for The Fortified Healthcare Fleet Streamlit Web UI & Agents
 FROM python:3.11-slim
 
+# Prevent interactive prompts during apt package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /app
 
 # Install system dependencies
