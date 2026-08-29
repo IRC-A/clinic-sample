@@ -23,6 +23,7 @@ variable "app_image" {
 variable "gemini_api_key" {
   type        = string
   description = "Google Gemini API Key for Google ADK agents"
+  default     = "placeholder_gemini_api_key"
   sensitive   = true
 }
 
