@@ -25,10 +25,12 @@ class TriageAgent:
         self.authorized_channels = config.triage_channels
 
         self.api_key = api_key or config.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
-        if self.api_key:
-            self.client = genai.Client(api_key=self.api_key)
-        else:
-            self.client = None
+        self.client = None
+        if self.api_key and self.api_key != "your_gemini_api_key_here":
+            try:
+                self.client = genai.Client(api_key=self.api_key)
+            except Exception:
+                self.client = None
 
         self.system_instruction = (
             "You are the Patient Triage AI Assistant for 'Dr. Cureta Clinic', built on Google ADK and Gemini 3.5 Flash.\n"
