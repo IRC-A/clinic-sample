@@ -14,8 +14,8 @@ class PediatriaAgent:
     """
     Pediatrics Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
     Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Capabilities: Dynamic BFA Late-Binding Semantic Discovery (POST /discover) for pediatric EHR records, 
-    pediatric drug dosage & contraindications safety checks, and non-repudiation evolutions.
+    Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for pediatric EHR records, 
+    pediatric drug safety, and non-repudiation evolutions over BFA Gateway network.
     """
 
     def __init__(self, doctor_id: str = "MED-301", api_key: Optional[str] = None):
@@ -39,6 +39,7 @@ class PediatriaAgent:
             "Your role is to assist pediatricians in evaluating pediatric clinical histories, checking pharmacological contraindications, "
             "and writing diagnostic evolutions with Zero-Trust non-repudiation audit trails.\n\n"
             "AUTHORIZED CHANNELS: #citas, #staff, #historial-medico, #vademecum.\n"
+            "IMPORTANT: Rely 100% on real data returned by BFA Gateway discovery. NEVER invent clinical records or dummy patient data."
         )
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
@@ -71,30 +72,27 @@ class PediatriaAgent:
                     )
                     return {"result": inv_res.json(), "discovery": disc_data, "det": det_data, "params": restricted_params}
                 else:
-                    inv_res = await client.post(
-                        f"{gateway_url}/invoke",
-                        json={
-                            "node_id": self.agent_id,
-                            "payload": {"action": semantic_query, "params": restricted_params, "det_token": det_data["det_token"]}
+                    return {
+                        "result": {
+                            "status": "error",
+                            "http_code": disc_res.status_code,
+                            "error_message": f"BFA Gateway POST /discover returned {disc_res.status_code}: {disc_res.text}"
                         },
-                        headers={"Authorization": f"Bearer {config.bfa_api_key}"}
-                    )
-                    return {"result": inv_res.json(), "det": det_data, "params": restricted_params}
+                        "det": det_data,
+                        "params": restricted_params
+                    }
         except Exception as e:
             return {
                 "result": {
-                    "status": "success",
-                    "channel": target_channel,
-                    "query": semantic_query,
-                    "patient_id": restricted_params.get("paciente_id", "101")
+                    "status": "gateway_unreachable",
+                    "error_message": f"🚫 BFA Gateway Network Connection Error ({gateway_url}): {e}"
                 },
                 "det": det_data,
-                "params": restricted_params,
-                "error_message": str(e)
+                "params": restricted_params
             }
 
     async def run(self, user_message: str, paciente_id: str = "101") -> Dict[str, Any]:
-        """Executes Pediatric Specialist workflow via BFA Gateway POST /discover."""
+        """Executes Pediatric Specialist workflow via BFA Gateway POST /discover. No fake fallback strings."""
         audit_trail = []
 
         ehr_exec = await self.discover_and_execute(
@@ -103,10 +101,20 @@ class PediatriaAgent:
             {"paciente_id": paciente_id, "medico_id": self.doctor_id}
         )
         audit_trail.append({"channel": "#historial-medico", "action": "discover:consultar_historial", "det": ehr_exec["det"], "params": ehr_exec["params"]})
-        ehr_data = ehr_exec["result"].get("health_record", {}) or ehr_exec["result"].get("historia_clinica", {})
+        
+        raw_result = ehr_exec.get("result", {})
+        if raw_result.get("status") in ["error", "gateway_unreachable"]:
+            err_msg = raw_result.get("error_message", "Gateway error")
+            return {
+                "response": f"⚠️ **BFA Gateway Connection / Registration Error**:\n{err_msg}\n\n*No tools or agents are currently registered in channel `#historial-medico` on BFA Gateway.*",
+                "patient_id": paciente_id,
+                "audit_trail": audit_trail,
+                "ehr_record": {}
+            }
 
-        alergias = ehr_data.get("allergies") or ehr_data.get("alergias") or ["Penicillin"]
-        antecedentes = ehr_data.get("medical_history") or ehr_data.get("antecedentes") or ["Mild bronchial asthma"]
+        ehr_data = raw_result.get("health_record", {}) or raw_result.get("historia_clinica", {})
+        alergias = ehr_data.get("allergies") or ehr_data.get("alergias") or []
+        antecedentes = ehr_data.get("medical_history") or ehr_data.get("antecedentes") or []
 
         vademecum_exec = await self.discover_and_execute(
             f"evaluate pediatric drug safety for patient query '{user_message}'",
@@ -118,7 +126,7 @@ class PediatriaAgent:
             }
         )
         audit_trail.append({"channel": "#vademecum", "action": "discover:validar_contraindicaciones", "det": vademecum_exec["det"], "params": vademecum_exec["params"]})
-        vademecum_res = vademecum_exec["result"]
+        vademecum_res = vademecum_exec.get("result", {})
 
         evo_exec = await self.discover_and_execute(
             f"record pediatric diagnostic evolution for patient {paciente_id}",
@@ -132,7 +140,7 @@ class PediatriaAgent:
             }
         )
         audit_trail.append({"channel": "#historial-medico", "action": "discover:guardar_evolucion", "det": evo_exec["det"], "params": evo_exec["params"]})
-        evolution_res = evo_exec["result"]
+        evolution_res = evo_exec.get("result", {})
 
         if self.client:
             try:
@@ -149,23 +157,26 @@ class PediatriaAgent:
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"[Gemini 3.5 Pro Pediatric Response]: Analysis completed for Patient ID {paciente_id}. (API status: {e})"
+                text_res = f"[Gemini 3.5 Pro Response]: BFA Gateway discovery response evaluated. (API status: {e})"
         else:
             lines = [f"🩺 **Pediatria Specialist Console — Doctor ID {self.doctor_id}**"]
-            lines.append(f"**Patient ID:** {paciente_id} ({ehr_data.get('name', 'Juan Pérez')})")
-            lines.append(f"**Medical History:** {', '.join(antecedentes)}")
-            lines.append(f"**Allergies:** {', '.join(alergias) if alergias else 'None known'}")
+            lines.append(f"**Patient ID:** {paciente_id} ({ehr_data.get('name', 'Patient')})")
+            lines.append(f"**Medical History:** {', '.join(antecedentes) if antecedentes else 'None recorded'}")
+            lines.append(f"**Allergies:** {', '.join(alergias) if alergias else 'None recorded'}")
 
-            alerts = vademecum_res.get("safety_alerts", vademecum_res.get("alertas_seguridad", [
-                "CRITICAL: Patient has recorded allergy to 'Penicillin' and prescribed drug is 'Amoxicillin'. CONTRAINDICATED."
-            ]))
-            lines.append(f"\n🚨 **VADEMECUM SAFETY ALERT (#vademecum via BFA Discover):**")
-            for a in alerts:
-                lines.append(f"- {a}")
+            if vademecum_res and vademecum_res.get("status") != "gateway_unreachable":
+                alerts = vademecum_res.get("safety_alerts", vademecum_res.get("alertas_seguridad", []))
+                if alerts:
+                    lines.append(f"\n🚨 **VADEMECUM SAFETY ALERT (#vademecum via BFA Discover):**")
+                    for a in alerts:
+                        lines.append(f"- {a}")
+                else:
+                    lines.append(f"\n✅ **VADEMECUM SAFETY CHECK (#vademecum via BFA Discover):** Medication evaluated without contraindications.")
 
-            lines.append(f"\n📝 **RECORDED PEDIATRIC EVOLUTION (#historial-medico via BFA Discover):**")
-            lines.append(f"- **Non-Repudiation Hash:** `{evolution_res.get('non_repudiation_hash', '52a34d1bd71bab020b3628f20fe2db8b12428818a2fb3c7d6e451fda4565375f')}`")
-            lines.append(f"- **DET Ticket Status:** Signed PASETO v4.public via BFA Gateway POST /discover")
+            if evolution_res and evolution_res.get("non_repudiation_hash"):
+                lines.append(f"\n📝 **RECORDED PEDIATRIC EVOLUTION (#historial-medico via BFA Discover):**")
+                lines.append(f"- **Non-Repudiation Hash:** `{evolution_res.get('non_repudiation_hash')}`")
+                lines.append(f"- **DET Ticket Status:** Signed PASETO v4.public via BFA Gateway POST /discover")
 
             text_res = "\n".join(lines)
 
