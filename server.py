@@ -7,9 +7,7 @@ import subprocess
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, Response
 
-app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
-
-# FastMCP Tool Metadata Registry for BFA Gateway Discovery
+# FastMCP Metadata
 TOOLS_REGISTRY = {
     "mcp_citas": [
         {
@@ -64,39 +62,34 @@ TOOLS_REGISTRY = {
 }
 
 
-@app.get("/mcp_citas/tools")
-@app.get("/mcp-citas/tools")
-def get_citas_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
+def create_mcp_subapp(key: str):
+    subapp = FastAPI()
+    @subapp.get("/tools")
+    @subapp.get("/")
+    def tools_endpoint():
+        return JSONResponse(content=TOOLS_REGISTRY[key])
+    return subapp
 
 
-@app.get("/mcp_staff/tools")
-@app.get("/mcp-staff/tools")
-def get_staff_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
+main_app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
+
+# Mount Sub-Apps BEFORE any catch-all routes
+main_app.mount("/mcp_citas", create_mcp_subapp("mcp_citas"))
+main_app.mount("/mcp-citas", create_mcp_subapp("mcp_citas"))
+
+main_app.mount("/mcp_staff", create_mcp_subapp("mcp_staff"))
+main_app.mount("/mcp-staff", create_mcp_subapp("mcp_staff"))
+
+main_app.mount("/mcp_ehr", create_mcp_subapp("mcp_ehr"))
+main_app.mount("/mcp-ehr", create_mcp_subapp("mcp_ehr"))
+
+main_app.mount("/mcp_vademecum", create_mcp_subapp("mcp_vademecum"))
+main_app.mount("/mcp-vademecum", create_mcp_subapp("mcp_vademecum"))
 
 
-@app.get("/mcp_ehr/tools")
-@app.get("/mcp-ehr/tools")
-def get_ehr_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
-
-
-@app.get("/mcp_vademecum/tools")
-@app.get("/mcp-vademecum/tools")
-def get_vademecum_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
-
-
-@app.post("/mcp_{server_name}/invoke")
-@app.post("/{server_name}/invoke")
-def invoke_tool(server_name: str, payload: dict):
-    return JSONResponse(content={"status": "success", "server": server_name, "data": payload})
-
-
-@app.get("/register/auto")
+@main_app.get("/register/auto")
 async def trigger_register():
-    """Trigger background registration of public FastMCP tools with GCP BFA Gateway."""
+    from src.config import config
     gateway_url = config.bfa_gateway_url.rstrip("/")
     base_url = os.getenv("HEALTHCARE_APP_URL", "https://fortified-healthcare-fleet-hmwmve5bjq-uc.a.run.app").rstrip("/")
     
@@ -131,7 +124,7 @@ async def trigger_register():
 # Background Streamlit Proxying
 STREAMLIT_PORT = 8501
 
-@app.on_event("startup")
+@main_app.on_event("startup")
 async def startup_event():
     # 1. Start Streamlit on port 8501
     subprocess.Popen([
@@ -152,12 +145,9 @@ async def startup_event():
         pass
 
 
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+@main_app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
     """Proxies web requests to Streamlit running on port 8501."""
-    if any(p in path for p in ["mcp_", "mcp-", "tools", "register/auto"]):
-        return JSONResponse(content={"error": "Not found"}, status_code=404)
-
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -178,6 +168,8 @@ async def proxy_streamlit(request: Request, path: str):
         except Exception:
             return Response(content="Service Starting...", status_code=503)
 
+
+app = main_app
 
 if __name__ == "__main__":
     import uvicorn
