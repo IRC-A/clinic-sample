@@ -3,6 +3,8 @@ FROM python:3.11-slim
 
 # Prevent interactive prompts during apt package installation
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PORT=8080
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
@@ -21,9 +23,7 @@ RUN pip install --no-cache-dir google-adk google-genai pytest-asyncio
 # Copy application source code
 COPY . /app
 
-# Cloud Run uses PORT environment variable (defaults to 8080)
-ENV PORT=8080
 EXPOSE 8080
 
 # Run Streamlit in headless server mode for Cloud Run compatibility
-CMD ["sh", "-c", "streamlit run app.py --server.port=${PORT:-8080} --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"]
+CMD ["streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]

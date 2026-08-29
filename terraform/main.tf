@@ -39,6 +39,8 @@ resource "google_cloud_run_v2_service" "healthcare_app" {
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
+    timeout = "300s"
+
     containers {
       image = var.app_image
 
