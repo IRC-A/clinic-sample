@@ -8,17 +8,13 @@ from google.genai import types
 
 from src.config import config
 from src.security.det_validator import issue_det_ticket
-from src.mcp_servers.mcp_citas import consultar_turnos, agendar_turno
-from src.mcp_servers.mcp_staff import consultar_directorio, consultar_guardia, validar_matricula
-from src.mcp_servers.mcp_ehr import consultar_historial, guardar_evolucion
-from src.mcp_servers.mcp_vademecum import buscar_medicamento, validar_contraindicaciones
 
 
 class DoctorAgent:
     """
     Medical Specialist Agent built with Google ADK & Gemini 3.5 Pro.
     Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Capabilities: High reasoning clinical diagnosis, EHR review, drug safety verification, non-repudiation evolution persistence.
+    Capabilities: High reasoning clinical diagnosis, EHR review, drug safety verification, non-repudiation evolution persistence over BFA Gateway network.
     """
 
     def __init__(self, medico_id: str = "MED-301", especialidad: str = "Pediatrics", api_key: Optional[str] = None):
@@ -52,8 +48,9 @@ class DoctorAgent:
 
     async def execute_tool_over_bfa(self, func_name: str, channel: str, args: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Executes FastMCP tools over the BFA Gateway REST network API.
+        Executes FastMCP tool requests 100% over the BFA Gateway REST API.
         Mints PASETO v4 DET tickets and validates channel policy permissions via BFA_GATEWAY_URL.
+        No local fallbacks or hardcoded in-memory function calls.
         """
         gateway_url = config.bfa_gateway_url.rstrip("/")
         det = issue_det_ticket(self.agent_id, channel, args)
@@ -67,9 +64,8 @@ class DoctorAgent:
             "params_hash": det["params_hash"]
         }
 
-        # 1. Try real HTTP network call to GCP BFA Gateway
         try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
+            async with httpx.AsyncClient(timeout=5.0) as client:
                 res = await client.post(
                     f"{gateway_url}/invoke",
                     json={
@@ -80,47 +76,24 @@ class DoctorAgent:
                 )
                 if res.status_code == 200:
                     return {"result": res.json(), "det": det, "params": args}
-        except Exception:
-            pass  # Fall back to local resolution if gateway endpoint is unreachable
-
-        # 2. Local FastMCP resolution fallback
-        raw = "{}"
-        if func_name == "consultar_historial":
-            raw = consultar_historial(
-                paciente_id=args.get("paciente_id", "101"),
-                medico_id=self.medico_id,
-                det_token=det["det_token"]
-            )
-        elif func_name == "validar_contraindicaciones":
-            raw = validar_contraindicaciones(
-                medicamento=args.get("medicamento", "Amoxicillin"),
-                paciente_alergias=args.get("paciente_alergias", []),
-                otros_medicamentos=args.get("otros_medicamentos", []),
-                det_token=det["det_token"]
-            )
-        elif func_name == "guardar_evolucion":
-            raw = guardar_evolucion(
-                paciente_id=args.get("paciente_id", "101"),
-                medico_id=self.medico_id,
-                diagnostico=args.get("diagnostico", "Clinical Evaluation"),
-                tratamiento=args.get("tratamiento", "Medical Indications"),
-                notas=args.get("notas", "Evolution saved with DET signature."),
-                det_token=det["det_token"]
-            )
-        elif func_name == "buscar_medicamento":
-            raw = buscar_medicamento(
-                query=args.get("query", "Amoxicillin"),
-                det_token=det["det_token"]
-            )
-
-        return {"result": json.loads(raw), "det": det, "params": args}
+                else:
+                    return {"result": {"status": "gateway_response", "http_code": res.status_code, "data": res.json()}, "det": det, "params": args}
+        except Exception as e:
+            return {
+                "result": {
+                    "status": "network_error",
+                    "error_message": f"BFA Gateway HTTP endpoint connection status: {e}"
+                },
+                "det": det,
+                "params": args
+            }
 
     async def run(self, user_message: str, paciente_id: str = "101") -> Dict[str, Any]:
-        """Executes doctor workflow: EHR read -> Vademecum safety check -> Evolution persist over BFA Gateway network."""
+        """Executes doctor workflow: EHR read -> Vademecum safety check -> Evolution persist 100% over BFA Gateway network."""
         audit_trail = []
         lowered = user_message.lower()
 
-        # Step 1: Read EHR history over BFA Gateway
+        # Step 1: Read EHR history 100% over BFA Gateway network
         ehr_exec = await self.execute_tool_over_bfa("consultar_historial", "#historial-medico", {"paciente_id": paciente_id, "medico_id": self.medico_id})
         audit_trail.append({"channel": "#historial-medico", "action": "consultar_historial", "det": ehr_exec["det"], "params": ehr_exec["params"]})
         ehr_data = ehr_exec["result"].get("health_record", {}) or ehr_exec["result"].get("historia_clinica", {})
@@ -128,7 +101,7 @@ class DoctorAgent:
         alergias = ehr_data.get("allergies") or ehr_data.get("alergias") or []
         antecedentes = ehr_data.get("medical_history") or ehr_data.get("antecedentes") or []
 
-        # Step 2: If medication mentioned, check vademecum contraindications over BFA Gateway
+        # Step 2: If medication mentioned, check vademecum contraindications 100% over BFA Gateway network
         vademecum_res = None
         if any(med in lowered for med in ["amoxicillin", "amoxicilina", "amoxidal", "ibuprofen", "ibuprofeno", "paracetamol", "salbutamol"]):
             target_med = "Amoxicillin" if "amoxi" in lowered else ("Ibuprofen" if "ibup" in lowered else "Paracetamol")
@@ -140,7 +113,7 @@ class DoctorAgent:
             audit_trail.append({"channel": "#vademecum", "action": "validar_contraindicaciones", "det": vademecum_exec["det"], "params": vademecum_exec["params"]})
             vademecum_res = vademecum_exec["result"]
 
-        # Step 3: If asked to record or conclude diagnosis, save evolution over BFA Gateway
+        # Step 3: If asked to record or conclude diagnosis, save evolution 100% over BFA Gateway network
         evolution_res = None
         if any(act in lowered for act in ["save", "guardar", "diagnose", "diagnostico", "evolucion", "prescribe", "recetar"]):
             evo_exec = await self.execute_tool_over_bfa("guardar_evolucion", "#historial-medico", {
@@ -148,7 +121,7 @@ class DoctorAgent:
                 "medico_id": self.medico_id,
                 "diagnostico": f"Assisted Consultation by Gemini Pro - {self.especialidad}",
                 "tratamiento": "Symptomatic follow-up and validated prescription",
-                "notas": "Consultation recorded with DET PASETO v4.public signature over BFA Gateway."
+                "notas": "Consultation recorded with DET PASETO v4.public signature over BFA Gateway network."
             })
             audit_trail.append({"channel": "#historial-medico", "action": "guardar_evolucion", "det": evo_exec["det"], "params": evo_exec["params"]})
             evolution_res = evo_exec["result"]
@@ -190,7 +163,7 @@ class DoctorAgent:
             if evolution_res:
                 lines.append(f"\n📝 **RECORDED DIAGNOSTIC EVOLUTION (#historial-medico):**")
                 lines.append(f"- **Non-Repudiation Hash:** `{evolution_res.get('non_repudiation_hash', 'N/A')}`")
-                lines.append(f"- **DET Ticket Status:** Signed PASETO v4.public over BFA Gateway")
+                lines.append(f"- **DET Ticket Status:** Signed PASETO v4.public over BFA Gateway network")
 
             text_res = "\n".join(lines)
 

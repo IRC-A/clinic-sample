@@ -8,8 +8,6 @@ from google.genai import types
 
 from src.config import config
 from src.security.det_validator import issue_det_ticket
-from src.mcp_servers.mcp_citas import consultar_turnos, agendar_turno
-from src.mcp_servers.mcp_staff import consultar_directorio, consultar_guardia, validar_matricula
 
 
 class TriageAgent:
@@ -47,12 +45,13 @@ class TriageAgent:
 
     async def call_bfa_gateway_network(self, action: str, channel: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Executes real HTTP network communication with the BFA Gateway REST API.
-        Sends session identity, target channel, and action parameters over HTTP to BFA_GATEWAY_URL.
+        Executes 100% real HTTP network communication with the BFA Gateway REST API.
+        Sends identity, logical channel scopes, and action parameters over HTTP to BFA_GATEWAY_URL.
+        No local fallbacks or hardcoded in-memory function calls.
         """
         gateway_url = config.bfa_gateway_url.rstrip("/")
-        
-        # Enforce Zero-Trust Channel Masking at agent-gateway level
+
+        # Enforce Zero-Trust Channel Masking at Gateway protocol level
         if channel in ["#historial-medico", "#vademecum"]:
             return {
                 "status": "error",
@@ -61,7 +60,7 @@ class TriageAgent:
                 "error_message": f"🚫 BFA Gateway Policy Violation: Channel '{channel}' is masked/denied for identity '{self.agent_id}'."
             }
 
-        # Issue DET ticket for network request
+        # Issue DET ticket for BFA Gateway network request
         det_data = issue_det_ticket(self.agent_id, channel, params)
 
         payload = {
@@ -73,9 +72,8 @@ class TriageAgent:
             "params_hash": det_data["params_hash"]
         }
 
-        # 1. Try real HTTP network call to GCP BFA Gateway
         try:
-            async with httpx.AsyncClient(timeout=4.0) as client:
+            async with httpx.AsyncClient(timeout=5.0) as client:
                 res = await client.post(
                     f"{gateway_url}/invoke",
                     json={
@@ -88,42 +86,20 @@ class TriageAgent:
                     return {"status": "success", "http_code": 200, "data": res.json(), "det": det_data}
                 elif res.status_code == 403:
                     return {"status": "error", "http_code": 403, "channel": channel, "error_message": res.json().get("detail", "Forbidden")}
-        except Exception:
-            pass  # Fall back to local FastMCP resolution if gateway endpoint is unreachable
-
-        # 2. Local FastMCP resolution fallback
-        raw_res = ""
-        if action == "consultar_turnos":
-            raw_res = consultar_turnos(
-                especialidad=params.get("especialidad", "All"),
-                fecha=params.get("fecha", "2026-08-28"),
-                det_token=det_data["det_token"]
-            )
-        elif action == "agendar_turno":
-            raw_res = agendar_turno(
-                paciente_nombre=params.get("paciente_nombre", "Juan Pérez"),
-                paciente_id=params.get("paciente_id", "101"),
-                medico_id=params.get("medico_id", "MED-301"),
-                especialidad=params.get("especialidad", "Pediatrics"),
-                fecha=params.get("fecha", "2026-08-28"),
-                hora=params.get("hora", "10:00"),
-                det_token=det_data["det_token"]
-            )
-        elif action == "consultar_guardia":
-            raw_res = consultar_guardia(
-                especialidad=params.get("especialidad", ""),
-                det_token=det_data["det_token"]
-            )
-
-        try:
-            parsed = json.loads(raw_res)
-        except Exception:
-            parsed = {"raw": raw_res}
-
-        return {"status": "success", "http_code": 200, "data": parsed, "det": det_data}
+                else:
+                    return {"status": "error", "http_code": res.status_code, "data": res.json(), "det": det_data}
+        except Exception as e:
+            # Network response error
+            return {
+                "status": "network_error",
+                "http_code": 503,
+                "channel": channel,
+                "error_message": f"BFA Gateway HTTP endpoint connection status: {e}",
+                "det": det_data
+            }
 
     async def run(self, user_message: str) -> Dict[str, Any]:
-        """Runs the agent with prompt injection check & real BFA Gateway network calls."""
+        """Runs the agent with prompt injection check & 100% BFA Gateway network calls."""
         lowered = user_message.lower().strip()
 
         # Prompt injection / Scope Creep Defense
@@ -137,7 +113,7 @@ class TriageAgent:
                     "blocked": True
                 }
 
-        # 1. Resolve tool request over BFA Gateway network
+        # 1. Resolve tool request over BFA Gateway network API
         gw_res = None
         tool_data = None
 
@@ -191,7 +167,7 @@ class TriageAgent:
         }
 
     def _format_human_response(self, tool_data: Optional[Dict[str, Any]], user_message: str) -> str:
-        """Formats tool results into warm, natural, human English text."""
+        """Formats BFA Gateway network tool results into warm, natural, human English text."""
         if not tool_data:
             return "Hello! Welcome to Dr. Cureta Clinic. How can I help you find a specialist or schedule an appointment today?"
 
@@ -210,7 +186,7 @@ class TriageAgent:
                 f"• **Specialty:** {spec} ({doc})\n"
                 f"• **Date & Time:** {dt} at {tm} hs\n"
                 f"• **Confirmation Reference ID:** `{app_id}`\n\n"
-                f"Your appointment has been registered in the clinic schedule. We look forward to seeing you! Is there anything else I can assist you with?"
+                f"Your appointment has been registered in the clinic schedule over the BFA Gateway. We look forward to seeing you! Is there anything else I can assist you with?"
             )
 
         if "available_slots" in tool_data or "turnos_disponibles" in tool_data:
