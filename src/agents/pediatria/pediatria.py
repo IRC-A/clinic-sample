@@ -153,9 +153,9 @@ class PediatriaAgent(BFAAgent):
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"🩺 **Pediatria Specialist Console (Gemini 3.5 Pro)**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
+                text_res = f"⚠️ **Gemini 3.5 Pro Inference Error**: {e}\n\n**Raw IRC-A BFA Gateway Discovery Payload ({target_channel}):**\n```json\n{json.dumps(bfa_result, ensure_ascii=False, indent=2)}\n```"
         else:
-            text_res = f"🩺 **Pediatria Specialist Console (Gemini 3.5 Pro)**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Payload: {json.dumps(bfa_result, ensure_ascii=False)}"
+            text_res = f"⚠️ **Gemini 3.5 Pro API Key Unconfigured**\n\n**Raw IRC-A BFA Gateway Discovery Payload ({target_channel}):**\n```json\n{json.dumps(bfa_result, ensure_ascii=False, indent=2)}\n```"
 
         return {
             "response": text_res,
