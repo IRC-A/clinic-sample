@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt pyproject.toml /app/
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir google-adk google-genai pytest-asyncio
 
 # Copy application source code
 COPY . /app
