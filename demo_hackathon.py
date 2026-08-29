@@ -3,8 +3,8 @@
 Google All Things Agentic Hackathon — Demonstration Script
 Track: "The Fortified Enterprise Fleet"
 
-This script executes and logs the 2 key demonstration flows:
-- Flow A: Legitimate Clinical Operation (Patient Triage -> Specialist Doctor EHR & Vademecum -> Signed Non-Repudiation Diagnosis)
+This script executes and logs the 2 key demonstration flows using official clinic-sample domain agents:
+- Flow A: Legitimate Clinical Operation (TriageAgent -> PediatriaAgent EHR & Vademecum -> Signed Non-Repudiation Diagnosis via BFA POST /discover)
 - Flow B: Indirect Prompt Injection & Scope Creep Mitigation (Zero-Trust Channel Masking Enforcement)
 """
 
@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 
 from src.config import config
 from src.agents.triage_agent import TriageAgent
-from src.agents.doctor_agent import DoctorAgent
+from src.agents.pediatria.pediatria import PediatriaAgent
 from src.security.det_validator import verify_det_ticket
 
 
@@ -26,7 +26,7 @@ def print_banner():
     print("   Architecture: Google ADK (Gemini 3.5) + IRC-A Zero-Trust + GCP Remote BFA Gateway")
     print("=" * 80)
     print(f"🔗 BFA Gateway GCP Endpoint: {config.bfa_gateway_url}")
-    print(f"🔑 Gemini Model Stack: Gemini 3.5 Flash (Triage) | Gemini 3.5 Pro (Doctor)")
+    print(f"🔑 Gemini Model Stack: Gemini 3.5 Flash (Triage) | Gemini 3.5 Pro (Pediatria)")
     print("=" * 80)
     print()
 
@@ -36,7 +36,7 @@ async def run_flow_a():
     print("-" * 80)
 
     triage_agent = TriageAgent()
-    doctor_agent = DoctorAgent(medico_id="MED-301", especialidad="Pediatrics")
+    pediatria_agent = PediatriaAgent(doctor_id="MED-301")
 
     # Step 1: Patient requests appointment
     print("📌 Step A1: Patient requests an appointment via Triage Agent (#citas, #staff)...")
@@ -46,20 +46,19 @@ async def run_flow_a():
     print(f"🤖 [Triage Agent (Gemini 3.5 Flash)]:\n{res_triage['response']}\n")
     assert not res_triage.get("blocked"), "Flow A1 failed: Triage agent was unexpectedly blocked."
 
-    # Step 2: Doctor opens consultation, inspects EHR, validates vademecum, and records diagnosis
-    print("📌 Step A2: Specialist Doctor opens consultation for Patient 101...")
+    # Step 2: Pediatria Specialist opens consultation, inspects EHR, validates vademecum, and records diagnosis via BFA Discover
+    print("📌 Step A2: Pediatria Specialist Agent opens consultation for Patient 101...")
     prompt_doctor = "Review clinical history for patient 101, validate Amoxicillin prescription, and save diagnostic evolution."
-    res_doctor = await doctor_agent.run(prompt_doctor, paciente_id="101")
+    res_doctor = await pediatria_agent.run(prompt_doctor, paciente_id="101")
 
-    print(f"🩺 [Doctor Agent (Gemini 3.5 Pro)]:\n{res_doctor['response']}\n")
+    print(f"🩺 [Pediatria Agent (Gemini 3.5 Pro)]:\n{res_doctor['response']}\n")
 
-    print("🛡️ [Zero-Trust Audit Trail & Ephemeral DET Verification]:")
+    print("🛡️ [Zero-Trust Audit Trail & Ephemeral DET Verification via BFA Discover]:")
     for idx, entry in enumerate(res_doctor["audit_trail"], 1):
         det_info = entry.get("det", {})
         det_token = det_info.get("det_token", "")
         params = entry.get("params", {})
         
-        # Perform local verification of the emitted DET ticket
         valid, msg, payload = verify_det_ticket(det_token, expected_channel=entry["channel"], params=params)
         
         print(f"  [{idx}] Channel: {entry['channel']} | Action: {entry['action']}")

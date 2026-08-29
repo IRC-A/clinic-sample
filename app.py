@@ -7,7 +7,7 @@ import streamlit as st
 from src.config import config
 from src.security.det_validator import issue_det_ticket, verify_det_ticket
 from src.agents.triage_agent import TriageAgent
-from src.agents.doctor_agent import DoctorAgent
+from src.agents.pediatria.pediatria import PediatriaAgent
 
 # Page setup
 st.set_page_config(
@@ -80,16 +80,13 @@ st.markdown(
 # Initialize Session State
 if "messages_triage" not in st.session_state:
     st.session_state.messages_triage = [
-        {"role": "assistant", "content": "👋 Hello! Welcome to the **Patient Portal (Triage)** of Dr. Cureta Clinic. How can I help you find a doctor or schedule an appointment today?"}
+        {"role": "assistant", "content": "👋 Hello! Welcome to the **Patient Portal (Triage Agent)** of Dr. Cureta Clinic. How can I help you find a doctor or schedule an appointment today?"}
     ]
 
 if "messages_doctor" not in st.session_state:
     st.session_state.messages_doctor = [
-        {"role": "assistant", "content": "🩺 **Specialist Medical Console (Google ADK / Gemini 3.5 Pro)** initialized. Select a Patient ID to evaluate clinical history, check drug contraindications in vademecum, and record signed diagnostic evolutions."}
+        {"role": "assistant", "content": "🩺 **Pediatria Specialist Agent (Google ADK / Gemini 3.5 Pro)** initialized. Select a Patient ID to evaluate clinical history, check drug contraindications in vademecum, and record signed diagnostic evolutions."}
     ]
-
-if "audit_logs" not in st.session_state:
-    st.session_state.audit_logs = []
 
 # Sidebar — Zero-Trust Live Audit Panel
 with st.sidebar:
@@ -101,14 +98,14 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("#### **Active Identity & Channel Masking**")
 
-    active_view = st.radio("Select View / User Role", ["Patient Portal (Triage)", "Doctor Specialist Console"])
+    active_view = st.radio("Select View / User Role", ["Patient Portal (Triage Agent)", "Pediatria Specialist Agent"])
 
-    if active_view == "Patient Portal (Triage)":
+    if active_view == "Patient Portal (Triage Agent)":
         active_role = "triage-agent (Gemini 3.5 Flash)"
         authorized = ["#citas", "#staff"]
         denied = ["#historial-medico", "#vademecum"]
     else:
-        active_role = "doctor-agent (Gemini 3.5 Pro)"
+        active_role = "pediatria-agent (Gemini 3.5 Pro)"
         authorized = ["#citas", "#staff", "#historial-medico", "#vademecum"]
         denied = []
 
@@ -128,7 +125,7 @@ with st.sidebar:
     st.markdown("#### **Live DET Ticket Inspector (PASETO v4.public)**")
     
     sample_det = issue_det_ticket(
-        agent_id="triage-agent" if "Triage" in active_view else "doctor-agent",
+        agent_id="triage-agent" if "Triage" in active_view else "pediatria-agent",
         channel="#citas" if "Triage" in active_view else "#historial-medico",
         params={"patient_id": "101", "timestamp": datetime.now(timezone.utc).isoformat()}
     )
@@ -149,8 +146,8 @@ with st.sidebar:
 st.markdown('<div class="main-title">The Fortified Healthcare Fleet</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Google ADK & Gemini 3.5 with IRC-A Zero-Trust Runtime Governance on Google Cloud</div>', unsafe_allow_html=True)
 
-if active_view == "Patient Portal (Triage)":
-    st.subheader("🤖 View 1: Patient Portal (Triage / Public Reception)")
+if active_view == "Patient Portal (Triage Agent)":
+    st.subheader("🤖 View 1: Patient Portal (Triage Agent)")
     st.info("💡 **Authorized Channels:** `#citas`, `#staff`. **Zero-Trust Enforcement:** Access attempts to `#historial-medico` will be masked and rejected.")
 
     for msg in st.session_state.messages_triage:
@@ -175,8 +172,8 @@ if active_view == "Patient Portal (Triage)":
         st.session_state.messages_triage.append({"role": "assistant", "content": result["response"]})
 
 else:
-    st.subheader("🩺 View 2: Specialist Medical Console (Pediatrics / General / Oncology)")
-    st.success("🔒 **Medical Authentication:** Active National Medical License. **Authorized Channels:** `#citas`, `#staff`, `#historial-medico`, `#vademecum`.")
+    st.subheader("🩺 View 2: Pediatria Specialist Agent Console")
+    st.success("🔒 **Medical Authentication:** Active National Pediatric License. **Authorized Channels:** `#citas`, `#staff`, `#historial-medico`, `#vademecum`.")
 
     col1, col2 = st.columns([1, 2])
 
@@ -184,7 +181,6 @@ else:
         st.markdown("#### **Patient Chart**")
         paciente_id = st.selectbox("Select Patient", ["101", "102"], index=0)
         medico_id = st.text_input("Doctor ID", value="MED-301")
-        especialidad = st.selectbox("Specialty", ["Pediatrics", "General Medicine", "Oncology"])
 
         st.markdown("#### **Quick Actions**")
         btn_historial = st.button("📄 Consult Clinical History", use_container_width=True)
@@ -212,15 +208,15 @@ else:
 
             with st.chat_message("assistant"):
                 with st.spinner("Deep Clinical Reasoning with Gemini 3.5 Pro..."):
-                    doctor_agent = DoctorAgent(medico_id=medico_id, especialidad=especialidad)
-                    res = asyncio.run(doctor_agent.run(query, paciente_id=paciente_id))
+                    pediatria_agent = PediatriaAgent(doctor_id=medico_id)
+                    res = asyncio.run(pediatria_agent.run(query, paciente_id=paciente_id))
                     st.markdown(res["response"])
 
                     if res.get("audit_trail"):
                         st.markdown("---")
-                        st.caption("🛡️ **Zero-Trust Audit Trail (DET Signed Operations):**")
+                        st.caption("🛡️ **Zero-Trust Audit Trail (DET Signed Operations via BFA Discover):**")
                         for entry in res["audit_trail"]:
                             det_info = entry.get("det", {})
-                            st.code(f"Channel: {entry['channel']} | Tool: {entry['action']} | DET Token: {det_info.get('det_token', '')[:45]}...", language="text")
+                            st.code(f"Channel: {entry['channel']} | Action: {entry['action']} | DET Token: {det_info.get('det_token', '')[:45]}...", language="text")
 
             st.session_state.messages_doctor.append({"role": "assistant", "content": res["response"]})
