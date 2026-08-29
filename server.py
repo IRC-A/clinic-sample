@@ -64,14 +64,36 @@ TOOLS_REGISTRY = {
 }
 
 
-@app.get("/mcp_{server_name}/tools")
-@app.get("/mcp-{server_name}/tools")
-@app.get("/mcp_{server_name}")
-@app.get("/mcp-{server_name}")
-def serve_mcp_tools(server_name: str):
-    key = f"mcp_{server_name.replace('-', '_')}"
-    tools = TOOLS_REGISTRY.get(key, [])
-    return JSONResponse(content=tools)
+@app.get("/mcp_citas/tools")
+@app.get("/mcp-citas/tools")
+@app.get("/mcp_citas")
+@app.get("/mcp-citas")
+def citas_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
+
+
+@app.get("/mcp_staff/tools")
+@app.get("/mcp-staff/tools")
+@app.get("/mcp_staff")
+@app.get("/mcp-staff")
+def staff_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
+
+
+@app.get("/mcp_ehr/tools")
+@app.get("/mcp-ehr/tools")
+@app.get("/mcp_ehr")
+@app.get("/mcp-ehr")
+def ehr_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
+
+
+@app.get("/mcp_vademecum/tools")
+@app.get("/mcp-vademecum/tools")
+@app.get("/mcp_vademecum")
+@app.get("/mcp-vademecum")
+def vademecum_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
 
 
 @app.get("/register/auto")
@@ -132,11 +154,10 @@ async def startup_event():
         pass
 
 
-@app.get("/{path:path}")
-@app.post("/{path:path}")
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501 if not an MCP endpoint."""
-    if path.startswith("mcp_") or path.startswith("mcp-"):
+    """Proxies web requests to Streamlit running on port 8501."""
+    if path.startswith("mcp"):
         srv_name = path.strip("/").split("/")[0].replace("-", "_")
         tools = TOOLS_REGISTRY.get(srv_name, [])
         return JSONResponse(content=tools)
