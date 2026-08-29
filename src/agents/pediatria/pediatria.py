@@ -45,7 +45,7 @@ class PediatriaAgent(BFAAgent):
 
         self.doctor_id = doctor_id
         self.specialty = "Pediatrics"
-        self.model = "gemini-3.5-pro"
+        self.model = "gemini-3.6-flash"
 
         self.api_key = api_key or config.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
         self.client = None
@@ -78,6 +78,7 @@ class PediatriaAgent(BFAAgent):
             async with httpx.AsyncClient(timeout=5.0) as client:
                 disc_res = await client.post(
                     f"{gateway_url}/discover",
+                    params={"query": semantic_query},
                     json=payload,
                     headers={"Authorization": f"Bearer {config.bfa_api_key}"}
                 )

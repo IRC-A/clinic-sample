@@ -34,7 +34,7 @@ class TriageAgent(BFAAgent):
             gateway_url=gateway_url
         )
 
-        self.model = "gemini-3.5-flash"
+        self.model = "gemini-3.6-flash"
         self.authorized_channels = config.triage_channels
 
         self.api_key = api_key or config.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
@@ -86,6 +86,7 @@ class TriageAgent(BFAAgent):
             async with httpx.AsyncClient(timeout=5.0) as client:
                 disc_res = await client.post(
                     f"{gateway_url}/discover",
+                    params={"query": user_message},
                     json=payload,
                     headers={"Authorization": f"Bearer {config.bfa_api_key}"}
                 )
