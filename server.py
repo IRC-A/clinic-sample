@@ -4,10 +4,9 @@ import json
 import httpx
 import asyncio
 import subprocess
-from fastapi import FastAPI, Request, APIRouter
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
-
-app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
 
 # FastMCP Tool Metadata Registry for BFA Gateway Discovery
 TOOLS_REGISTRY = {
@@ -63,38 +62,27 @@ TOOLS_REGISTRY = {
     ]
 }
 
-# Dedicated FastMCP Router
-mcp_router = APIRouter()
 
-@mcp_router.get("/mcp_citas/tools")
-@mcp_router.get("/mcp-citas/tools")
-@mcp_router.get("/mcp_citas")
-@mcp_router.get("/mcp-citas")
-def citas_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
+class MCPDiscoveryMiddleware(BaseHTTPMiddleware):
+    """Starlette BaseHTTPMiddleware running at top of ASGI pipeline before any routing."""
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path.strip("/")
+        
+        if "mcp" in path:
+            parts = path.split("/")
+            raw_node = parts[0].replace("-", "_")
+            srv_key = raw_node if raw_node.startswith("mcp_") else f"mcp_{raw_node}"
+            tools = TOOLS_REGISTRY.get(srv_key, TOOLS_REGISTRY.get(raw_node, []))
+            return JSONResponse(content=tools)
+            
+        return await call_next(request)
 
-@mcp_router.get("/mcp_staff/tools")
-@mcp_router.get("/mcp-staff/tools")
-@mcp_router.get("/mcp_staff")
-@mcp_router.get("/mcp-staff")
-def staff_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
 
-@mcp_router.get("/mcp_ehr/tools")
-@mcp_router.get("/mcp-ehr/tools")
-@mcp_router.get("/mcp_ehr")
-@mcp_router.get("/mcp-ehr")
-def ehr_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
+app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
+app.add_middleware(MCPDiscoveryMiddleware)
 
-@mcp_router.get("/mcp_vademecum/tools")
-@mcp_router.get("/mcp-vademecum/tools")
-@mcp_router.get("/mcp_vademecum")
-@mcp_router.get("/mcp-vademecum")
-def vademecum_tools():
-    return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
 
-@mcp_router.get("/register/auto")
+@app.get("/register/auto")
 async def trigger_register():
     from src.config import config
     gateway_url = config.bfa_gateway_url.rstrip("/")
@@ -127,9 +115,8 @@ async def trigger_register():
 
     return JSONResponse(content=results)
 
-# Include MCP router FIRST before any catch-all routes
-app.include_router(mcp_router)
 
+# Background Streamlit Proxying
 STREAMLIT_PORT = 8501
 
 @app.on_event("startup")
@@ -155,7 +142,7 @@ async def startup_event():
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501 if not an explicit FastMCP endpoint."""
+    """Proxies web requests to Streamlit running on port 8501."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
