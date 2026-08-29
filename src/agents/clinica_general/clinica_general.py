@@ -14,10 +14,11 @@ from src.security.det_validator import issue_det_ticket
 class ClinicaGeneralAgent(BFAAgent):
     """
     General Medicine Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
-    Inherits from BFAAgent for automatic self-registration (selfregister) with BFA Gateway.
-    Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for general practice EHR records, 
-    drug safety, and non-repudiation evolutions over BFA Gateway network.
+    Adheres strictly to the IRC-A (Internet Relay Chat for Agents) Architecture Whitepaper.
+    
+    IRC-A Core Principle:
+    "An intelligent agent should never know the ecosystem it runs in. It should only know
+    its own responsibility (general adult practice, flu, hypertension). Discovery is an infrastructure concern."
     """
 
     def __init__(self, doctor_id: str = "MED-201", url: Optional[str] = None, api_key: Optional[str] = None):
@@ -27,9 +28,16 @@ class ClinicaGeneralAgent(BFAAgent):
         super().__init__(
             agent_id="clinica-general-agent",
             name="Clinica General Agent",
-            description="General clinic specialist: evaluates adult complaints and primary care via BFA Gateway.",
-            tags=["salud", "clinica", "medicina general"],
-            examples=["tengo dolor de garganta", "control de hipertension"],
+            description=(
+                "General clinic specialist: evaluates common adult complaints (flu, respiratory, gastrointestinal, "
+                "musculoskeletal, hypertension follow-up), offers triage guidance and referral suggestions."
+            ),
+            tags=["salud", "clinica", "medicina general", "triage"],
+            examples=[
+                "tengo dolor de garganta y fiebre desde hace 3 dias",
+                "necesito control de hipertension",
+                "diagnostico y tratamiento para gripe o resfrio comun"
+            ],
             url=agent_url,
             gateway_url=gateway_url
         )
@@ -37,7 +45,6 @@ class ClinicaGeneralAgent(BFAAgent):
         self.doctor_id = doctor_id
         self.specialty = "Clinica General"
         self.model = "gemini-3.5-pro"
-        self.authorized_channels = config.doctor_channels
 
         self.api_key = api_key or config.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
         self.client = None
@@ -49,14 +56,14 @@ class ClinicaGeneralAgent(BFAAgent):
 
         self.system_instruction = (
             "You are the General Medicine Specialist AI Assistant for 'Clinica del Dr. Cureta', built on Google ADK and Gemini 3.5 Pro.\n"
-            "Your role is to assist primary care doctors in evaluating adult clinical histories, checking contraindications, "
-            "and writing diagnostic evolutions with Zero-Trust non-repudiation audit trails.\n\n"
-            "AUTHORIZED CHANNELS: #citas, #staff, #historial-medico, #vademecum.\n"
-            "IMPORTANT: Rely 100% on dynamic user input and real data returned by BFA Gateway discovery. NEVER use hardcoded mock strings."
+            "You specialize in general practice and primary care (flu, hypertension, throat infections, adult complaints).\n"
+            "You do NOT possess local databases or hardcoded medical records in your memory.\n"
+            "All capability discovery and external data retrieval are performed late-binding over the IRC-A BFA Gateway network.\n"
+            "Rely strictly on the BFA Gateway discovery payload and your clinical reasoning to provide concise, professional guidance."
         )
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
-        """BFA Gateway Late-Binding Semantic Discovery (POST /discover) & Execution."""
+        """IRC-A Late-Binding Semantic Discovery (POST /discover) & Execution via BFA Gateway."""
         gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
@@ -98,17 +105,17 @@ class ClinicaGeneralAgent(BFAAgent):
             return {
                 "result": {
                     "status": "gateway_unreachable",
-                    "error_message": f"🚫 BFA Gateway Network Connection Error ({gateway_url}): {e}"
+                    "error_message": f"🚫 BFA Gateway Connection Error ({gateway_url}): {e}"
                 },
                 "det": det_data,
                 "params": restricted_params
             }
 
     async def run(self, user_message: str, paciente_id: str = "101", context: Any = None) -> Dict[str, Any]:
-        """100% Dynamic Agent Execution with Gemini 3.5 Pro."""
+        """Pure IRC-A Cognitive Agent Reasoning Loop with Gemini 3.5 Pro."""
         audit_trail = []
-
         lowered = user_message.lower()
+
         if any(kw in lowered for kw in ["vademecum", "contraindicacion", "drug", "medicamento", "alergia", "allergy", "prescribe", "receta"]):
             target_channel = "#vademecum"
         else:
@@ -128,8 +135,9 @@ class ClinicaGeneralAgent(BFAAgent):
                 prompt = (
                     f"Doctor ID: {self.doctor_id} ({self.specialty})\n"
                     f"Patient ID: {paciente_id}\n"
-                    f"User Prompt: '{user_message}'\n\n"
-                    f"BFA Gateway Discovery Data ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
+                    f"Clinical Query / Prompt: '{user_message}'\n\n"
+                    f"IRC-A BFA Gateway Discovery Payload ({target_channel}):\n{json.dumps(bfa_result, ensure_ascii=False, indent=2)}\n\n"
+                    "Instruction: Provide clear primary care clinical guidance and answer the prompt based strictly on the IRC-A payload and clinical reasoning."
                 )
                 response = self.client.models.generate_content(
                     model=self.model,
@@ -142,9 +150,9 @@ class ClinicaGeneralAgent(BFAAgent):
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"🩺 **Clinica General Specialist Console ({self.specialty})**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
+                text_res = f"🩺 **Clinica General Specialist Console (Gemini 3.5 Pro)**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
         else:
-            text_res = f"🩺 **Clinica General Specialist Console ({self.specialty})**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Data: {json.dumps(bfa_result, ensure_ascii=False)}"
+            text_res = f"🩺 **Clinica General Specialist Console (Gemini 3.5 Pro)**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Payload: {json.dumps(bfa_result, ensure_ascii=False)}"
 
         return {
             "response": text_res,

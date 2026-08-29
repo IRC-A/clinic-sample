@@ -14,10 +14,12 @@ from src.security.det_validator import issue_det_ticket
 class PediatriaAgent(BFAAgent):
     """
     Pediatrics Specialist Agent built with Google ADK & Gemini 3.5 Pro for 'clinic-sample'.
-    Inherits from BFAAgent for automatic self-registration (selfregister) with BFA Gateway.
-    Authorized Channels: ['#citas', '#staff', '#historial-medico', '#vademecum']
-    Capabilities: Pure BFA Gateway Late-Binding Semantic Discovery (POST /discover) for pediatric EHR records, 
-    pediatric drug safety, and non-repudiation evolutions over BFA Gateway network.
+    Adheres strictly to the IRC-A (Internet Relay Chat for Agents) Architecture Whitepaper.
+    
+    IRC-A Core Principle:
+    "Traditional agent frameworks distribute knowledge. IRC-A distributes capabilities.
+    An intelligent agent should never know the ecosystem it runs in. It should only know
+    its own responsibility (pediatric clinical reasoning). Discovery is an infrastructure concern."
     """
 
     def __init__(self, doctor_id: str = "MED-301", url: Optional[str] = None, api_key: Optional[str] = None):
@@ -27,9 +29,16 @@ class PediatriaAgent(BFAAgent):
         super().__init__(
             agent_id="pediatria-agent",
             name="Pediatria Agent",
-            description="Pediatrics specialist agent: evaluates pediatric symptoms, vaccination, and growth guidance via BFA Gateway.",
-            tags=["pediatria", "niños", "infantes", "vacunas"],
-            examples=["mi bebe tiene fiebre y no come", "consulta pediatrica general"],
+            description=(
+                "Pediatrics specialist: evaluates symptoms in infants and children (fever, measles, mumps, tonsillitis), "
+                "provides vaccination guidance, growth and nutrition advice, and urgent-care triage."
+            ),
+            tags=["pediatria", "niños", "infantes", "vacunas", "crecimiento"],
+            examples=[
+                "mi bebe tiene fiebre y no come",
+                "¿cuando le toca la proxima vacuna a mi hijo?",
+                "diagnostico para sospecha de sarampion o angina infantil"
+            ],
             url=agent_url,
             gateway_url=gateway_url
         )
@@ -37,7 +46,6 @@ class PediatriaAgent(BFAAgent):
         self.doctor_id = doctor_id
         self.specialty = "Pediatrics"
         self.model = "gemini-3.5-pro"
-        self.authorized_channels = config.doctor_channels
 
         self.api_key = api_key or config.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
         self.client = None
@@ -49,14 +57,14 @@ class PediatriaAgent(BFAAgent):
 
         self.system_instruction = (
             "You are the Pediatric Specialist AI Assistant for 'Clinica del Dr. Cureta', built on Google ADK and Gemini 3.5 Pro.\n"
-            "Your role is to assist pediatricians in evaluating pediatric clinical inquiries, checking contraindications, "
-            "and writing diagnostic evolutions with Zero-Trust non-repudiation audit trails.\n\n"
-            "AUTHORIZED CHANNELS: #citas, #staff, #historial-medico, #vademecum.\n"
-            "IMPORTANT: Rely 100% on dynamic user input and real data returned by BFA Gateway discovery. NEVER use hardcoded mock strings."
+            "You specialize in pediatric medicine (diagnosing infant fever, measles, mumps, angina, pediatric vaccinations).\n"
+            "You do NOT possess local databases or hardcoded medical records in your memory.\n"
+            "All capability discovery and external data retrieval are performed late-binding over the IRC-A BFA Gateway network.\n"
+            "Rely strictly on the BFA Gateway discovery payload and your pediatric medical reasoning to provide concise, professional guidance."
         )
 
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
-        """BFA Gateway Late-Binding Semantic Discovery (POST /discover) & Execution."""
+        """IRC-A Late-Binding Semantic Discovery (POST /discover) & Execution via BFA Gateway."""
         gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
@@ -98,22 +106,24 @@ class PediatriaAgent(BFAAgent):
             return {
                 "result": {
                     "status": "gateway_unreachable",
-                    "error_message": f"🚫 BFA Gateway Network Connection Error ({gateway_url}): {e}"
+                    "error_message": f"🚫 BFA Gateway Connection Error ({gateway_url}): {e}"
                 },
                 "det": det_data,
                 "params": restricted_params
             }
 
     async def run(self, user_message: str, paciente_id: str = "101", context: Any = None) -> Dict[str, Any]:
-        """100% Dynamic Agent Execution with Gemini 3.5 Pro."""
+        """Pure IRC-A Cognitive Agent Reasoning Loop with Gemini 3.5 Pro."""
         audit_trail = []
-
         lowered = user_message.lower()
+
+        # Late-Binding Intent Scope Resolution over IRC-A channels
         if any(kw in lowered for kw in ["vademecum", "contraindicacion", "drug", "medicamento", "alergia", "allergy", "prescribe", "receta"]):
             target_channel = "#vademecum"
         else:
             target_channel = "#historial-medico"
 
+        # Discover capabilities dynamically at runtime via BFA Gateway
         disc_exec = await self.discover_and_execute(
             user_message,
             target_channel,
@@ -128,8 +138,9 @@ class PediatriaAgent(BFAAgent):
                 prompt = (
                     f"Doctor ID: {self.doctor_id} ({self.specialty})\n"
                     f"Patient ID: {paciente_id}\n"
-                    f"User Prompt: '{user_message}'\n\n"
-                    f"BFA Gateway Discovery Data ({target_channel}): {json.dumps(bfa_result, ensure_ascii=False)}"
+                    f"Clinical Query / Prompt: '{user_message}'\n\n"
+                    f"IRC-A BFA Gateway Discovery Payload ({target_channel}):\n{json.dumps(bfa_result, ensure_ascii=False, indent=2)}\n\n"
+                    "Instruction: Provide clear pediatric clinical guidance and answer the prompt based strictly on the IRC-A payload and pediatric medical reasoning."
                 )
                 response = self.client.models.generate_content(
                     model=self.model,
@@ -142,9 +153,9 @@ class PediatriaAgent(BFAAgent):
                 )
                 text_res = response.text
             except Exception as e:
-                text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
+                text_res = f"🩺 **Pediatria Specialist Console (Gemini 3.5 Pro)**\nPatient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Response: {json.dumps(bfa_result, ensure_ascii=False)}"
         else:
-            text_res = f"🩺 **Pediatria Specialist Console ({self.specialty})**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Data: {json.dumps(bfa_result, ensure_ascii=False)}"
+            text_res = f"🩺 **Pediatria Specialist Console (Gemini 3.5 Pro)**\nDoctor ID: {self.doctor_id} | Patient ID: {paciente_id}\nPrompt: '{user_message}'\nBFA Gateway Payload: {json.dumps(bfa_result, ensure_ascii=False)}"
 
         return {
             "response": text_res,
