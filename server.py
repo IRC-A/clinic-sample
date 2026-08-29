@@ -64,6 +64,20 @@ TOOLS_REGISTRY = {
 }
 
 
+@app.middleware("http")
+async def mcp_interceptor_middleware(request: Request, call_next):
+    """ASGI HTTP Middleware executing BEFORE any route resolution."""
+    raw_path = request.url.path.strip("/")
+    
+    if raw_path.startswith("mcp_") or raw_path.startswith("mcp-"):
+        parts = raw_path.split("/")
+        srv_name = parts[0].replace("-", "_")
+        tools = TOOLS_REGISTRY.get(srv_name, [])
+        return JSONResponse(content=tools)
+        
+    return await call_next(request)
+
+
 @app.get("/register/auto")
 async def trigger_register():
     from src.config import config
@@ -124,16 +138,7 @@ async def startup_event():
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Intercepts FastMCP tool requests or proxies web requests to Streamlit running on port 8501."""
-    clean_path = path.strip("/")
-
-    # Check if request is targeting a FastMCP tool discovery endpoint
-    if "mcp_" in clean_path or "mcp-" in clean_path:
-        parts = clean_path.split("/")
-        srv_name = parts[0].replace("-", "_")
-        tools = TOOLS_REGISTRY.get(srv_name, [])
-        return JSONResponse(content=tools)
-
+    """Proxies web requests to Streamlit running on port 8501."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
