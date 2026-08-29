@@ -4,7 +4,7 @@ import json
 import httpx
 import asyncio
 import subprocess
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from starlette.responses import JSONResponse, Response
 
 app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
@@ -63,40 +63,38 @@ TOOLS_REGISTRY = {
     ]
 }
 
+# Dedicated FastMCP Router
+mcp_router = APIRouter()
 
-@app.get("/mcp_citas/tools")
-@app.get("/mcp-citas/tools")
-@app.get("/mcp_citas")
-@app.get("/mcp-citas")
+@mcp_router.get("/mcp_citas/tools")
+@mcp_router.get("/mcp-citas/tools")
+@mcp_router.get("/mcp_citas")
+@mcp_router.get("/mcp-citas")
 def citas_tools():
     return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
 
-
-@app.get("/mcp_staff/tools")
-@app.get("/mcp-staff/tools")
-@app.get("/mcp_staff")
-@app.get("/mcp-staff")
+@mcp_router.get("/mcp_staff/tools")
+@mcp_router.get("/mcp-staff/tools")
+@mcp_router.get("/mcp_staff")
+@mcp_router.get("/mcp-staff")
 def staff_tools():
     return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
 
-
-@app.get("/mcp_ehr/tools")
-@app.get("/mcp-ehr/tools")
-@app.get("/mcp_ehr")
-@app.get("/mcp-ehr")
+@mcp_router.get("/mcp_ehr/tools")
+@mcp_router.get("/mcp-ehr/tools")
+@mcp_router.get("/mcp_ehr")
+@mcp_router.get("/mcp-ehr")
 def ehr_tools():
     return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
 
-
-@app.get("/mcp_vademecum/tools")
-@app.get("/mcp-vademecum/tools")
-@app.get("/mcp_vademecum")
-@app.get("/mcp-vademecum")
+@mcp_router.get("/mcp_vademecum/tools")
+@mcp_router.get("/mcp-vademecum/tools")
+@mcp_router.get("/mcp_vademecum")
+@mcp_router.get("/mcp-vademecum")
 def vademecum_tools():
     return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
 
-
-@app.get("/register/auto")
+@mcp_router.get("/register/auto")
 async def trigger_register():
     from src.config import config
     gateway_url = config.bfa_gateway_url.rstrip("/")
@@ -129,8 +127,9 @@ async def trigger_register():
 
     return JSONResponse(content=results)
 
+# Include MCP router FIRST before any catch-all routes
+app.include_router(mcp_router)
 
-# Background Streamlit Proxying
 STREAMLIT_PORT = 8501
 
 @app.on_event("startup")
@@ -156,12 +155,7 @@ async def startup_event():
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501."""
-    if path.startswith("mcp"):
-        srv_name = path.strip("/").split("/")[0].replace("-", "_")
-        tools = TOOLS_REGISTRY.get(srv_name, [])
-        return JSONResponse(content=tools)
-
+    """Proxies web requests to Streamlit running on port 8501 if not an explicit FastMCP endpoint."""
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
