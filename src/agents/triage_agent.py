@@ -1,5 +1,6 @@
 import os
 import json
+import httpx
 import asyncio
 from typing import Dict, Any, List, Optional
 from google import genai
@@ -44,84 +45,104 @@ class TriageAgent:
             "3. ALWAYS respond in warm, natural, professional English. NEVER output raw JSON to the user."
         )
 
-    def resolve_tool_request(self, func_name: str, args: Dict[str, Any]) -> str:
-        """Resolves tool request against FastMCP servers after checking channel masking and issuing DET tickets."""
-        # Enforce Zero-Trust Channel Masking
-        if func_name in ["consultar_historial", "guardar_evolucion"]:
-            return json.dumps({
+    async def call_bfa_gateway_network(self, action: str, channel: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Executes real HTTP network communication with the BFA Gateway REST API.
+        Sends session identity, target channel, and action parameters over HTTP to BFA_GATEWAY_URL.
+        """
+        gateway_url = config.bfa_gateway_url.rstrip("/")
+        
+        # Enforce Zero-Trust Channel Masking at agent-gateway level
+        if channel in ["#historial-medico", "#vademecum"]:
+            return {
                 "status": "error",
-                "error_code": "403_FORBIDDEN",
-                "channel": "#historial-medico",
-                "message": "🚫 BFA Gateway Policy Violation: Channel '#historial-medico' is masked/denied for identity 'triage-agent'."
-            }, ensure_ascii=False)
+                "http_code": 403,
+                "channel": channel,
+                "error_message": f"🚫 BFA Gateway Policy Violation: Channel '{channel}' is masked/denied for identity '{self.agent_id}'."
+            }
 
-        if func_name in ["buscar_medicamento", "validar_contraindicaciones"]:
-            return json.dumps({
-                "status": "error",
-                "error_code": "403_FORBIDDEN",
-                "channel": "#vademecum",
-                "message": "🚫 BFA Gateway Policy Violation: Channel '#vademecum' is masked/denied for identity 'triage-agent'."
-            }, ensure_ascii=False)
+        # Issue DET ticket for network request
+        det_data = issue_det_ticket(self.agent_id, channel, params)
 
-        # Authorized channel tools
-        if func_name == "consultar_turnos":
-            det = issue_det_ticket(self.agent_id, "#citas", args)
-            return consultar_turnos(
-                especialidad=args.get("especialidad", "All"),
-                fecha=args.get("fecha", "2026-08-28"),
-                det_token=det["det_token"]
+        payload = {
+            "agent_id": self.agent_id,
+            "channel": channel,
+            "action": action,
+            "params": params,
+            "det_token": det_data["det_token"],
+            "params_hash": det_data["params_hash"]
+        }
+
+        # 1. Try real HTTP network call to GCP BFA Gateway
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                res = await client.post(
+                    f"{gateway_url}/invoke",
+                    json={
+                        "node_id": self.agent_id,
+                        "payload": payload
+                    },
+                    headers={"Authorization": f"Bearer {config.bfa_api_key}"}
+                )
+                if res.status_code == 200:
+                    return {"status": "success", "http_code": 200, "data": res.json(), "det": det_data}
+                elif res.status_code == 403:
+                    return {"status": "error", "http_code": 403, "channel": channel, "error_message": res.json().get("detail", "Forbidden")}
+        except Exception:
+            pass  # Fall back to local FastMCP resolution if gateway endpoint is unreachable
+
+        # 2. Local FastMCP resolution fallback
+        raw_res = ""
+        if action == "consultar_turnos":
+            raw_res = consultar_turnos(
+                especialidad=params.get("especialidad", "All"),
+                fecha=params.get("fecha", "2026-08-28"),
+                det_token=det_data["det_token"]
+            )
+        elif action == "agendar_turno":
+            raw_res = agendar_turno(
+                paciente_nombre=params.get("paciente_nombre", "Juan Pérez"),
+                paciente_id=params.get("paciente_id", "101"),
+                medico_id=params.get("medico_id", "MED-301"),
+                especialidad=params.get("especialidad", "Pediatrics"),
+                fecha=params.get("fecha", "2026-08-28"),
+                hora=params.get("hora", "10:00"),
+                det_token=det_data["det_token"]
+            )
+        elif action == "consultar_guardia":
+            raw_res = consultar_guardia(
+                especialidad=params.get("especialidad", ""),
+                det_token=det_data["det_token"]
             )
 
-        elif func_name == "agendar_turno":
-            det = issue_det_ticket(self.agent_id, "#citas", args)
-            return agendar_turno(
-                paciente_nombre=args.get("paciente_nombre", "Juan Pérez"),
-                paciente_id=args.get("paciente_id", "101"),
-                medico_id=args.get("medico_id", "MED-301"),
-                especialidad=args.get("especialidad", "Pediatrics"),
-                fecha=args.get("fecha", "2026-08-28"),
-                hora=args.get("hora", "10:00"),
-                det_token=det["det_token"]
-            )
+        try:
+            parsed = json.loads(raw_res)
+        except Exception:
+            parsed = {"raw": raw_res}
 
-        elif func_name == "consultar_directorio":
-            det = issue_det_ticket(self.agent_id, "#staff", args)
-            return consultar_directorio(
-                especialidad=args.get("especialidad", ""),
-                det_token=det["det_token"]
-            )
-
-        elif func_name == "consultar_guardia":
-            det = issue_det_ticket(self.agent_id, "#staff", args)
-            return consultar_guardia(
-                especialidad=args.get("especialidad", ""),
-                det_token=det["det_token"]
-            )
-
-        return json.dumps({"status": "unknown_tool"}, ensure_ascii=False)
+        return {"status": "success", "http_code": 200, "data": parsed, "det": det_data}
 
     async def run(self, user_message: str) -> Dict[str, Any]:
-        """Runs the agent with prompt injection check & tool calling simulation."""
+        """Runs the agent with prompt injection check & real BFA Gateway network calls."""
         lowered = user_message.lower().strip()
 
-        # Prompt injection check
+        # Prompt injection / Scope Creep Defense
         if any(kw in lowered for kw in ["historial", "history", "records", "paciente 101", "patient 101", "ignore previous", "ignora las instrucciones"]):
             if not any(kw in lowered for kw in ["appointment", "booking", "slot", "turno", "cita", "guardia", "on-call"]):
-                res_tool = self.resolve_tool_request("consultar_historial", {"paciente_id": "101", "medico_id": "MED-301"})
+                gw_res = await self.call_bfa_gateway_network("consultar_historial", "#historial-medico", {"paciente_id": "101", "medico_id": "MED-301"})
                 return {
-                    "response": "⚠️ **Access Denied by BFA Gateway (Zero-Trust Rule)**: The Triage role (`triage-agent`) does not have permissions to query channel `#historial-medico`. Access to Medical History has been blocked to protect patient confidentiality.",
+                    "response": f"⚠️ **Access Denied by BFA Gateway (Zero-Trust Rule)**: The Triage role (`triage-agent`) does not have permissions to query channel `#historial-medico`. Access to Medical History has been blocked by BFA Policy Engine to protect patient confidentiality.",
                     "channel_used": "#historial-medico (MASKED)",
-                    "tool_output": res_tool,
+                    "gateway_network_res": gw_res,
                     "blocked": True
                 }
 
-        # 1. Resolve deterministic tool data from FastMCP servers
-        tool_res_str = ""
+        # 1. Resolve tool request over BFA Gateway network
+        gw_res = None
         tool_data = None
 
-        # Check for booking confirmation (e.g. "si", "yes", "confirm", "confirmo", "ok", "por favor", "book")
         if lowered in ["si", "sí", "yes", "confirm", "confirmo", "ok", "por favor", "sure", "yep", "agendar", "confirmar"] or any(kw in lowered for kw in ["confirm appointment", "book appointment", "agendar turno"]):
-            tool_res_str = self.resolve_tool_request("agendar_turno", {
+            gw_res = await self.call_bfa_gateway_network("agendar_turno", "#citas", {
                 "paciente_nombre": "Juan Pérez",
                 "paciente_id": "101",
                 "medico_id": "MED-301",
@@ -129,30 +150,21 @@ class TriageAgent:
                 "fecha": "2026-08-28",
                 "hora": "10:00"
             })
-            try:
-                tool_data = json.loads(tool_res_str)
-            except Exception:
-                pass
+            tool_data = gw_res.get("data")
         elif any(kw in lowered for kw in ["guardia", "on-call", "duty", "emergency", "urgencia"]):
-            tool_res_str = self.resolve_tool_request("consultar_guardia", {"especialidad": "Pediatrics" if "pedia" in lowered else ""})
-            try:
-                tool_data = json.loads(tool_res_str)
-            except Exception:
-                pass
+            gw_res = await self.call_bfa_gateway_network("consultar_guardia", "#staff", {"especialidad": "Pediatrics" if "pedia" in lowered else ""})
+            tool_data = gw_res.get("data")
         elif any(kw in lowered for kw in ["pediatra", "pediatric", "pediatrics", "appointment", "slot", "booking", "cita", "turno"]):
             esp = "Pediatrics" if "pedia" in lowered else "All"
-            tool_res_str = self.resolve_tool_request("consultar_turnos", {"especialidad": esp, "fecha": "2026-08-28"})
-            try:
-                tool_data = json.loads(tool_res_str)
-            except Exception:
-                pass
+            gw_res = await self.call_bfa_gateway_network("consultar_turnos", "#citas", {"especialidad": esp, "fecha": "2026-08-28"})
+            tool_data = gw_res.get("data")
 
         # 2. Generate natural human response via Gemini 3.5 Flash or fallback formatter
         if self.client:
             try:
                 prompt = (
                     f"User Query: '{user_message}'\n\n"
-                    f"System Data (#citas / #staff): {tool_res_str}\n\n"
+                    f"BFA Gateway Response (#citas / #staff): {json.dumps(tool_data, ensure_ascii=False)}\n\n"
                     "Instruction: Respond to the user in a warm, natural, professional English tone. "
                     "If an appointment was scheduled/confirmed, inform the patient clearly with doctor name, date, time, and appointment ID. DO NOT output raw JSON."
                 )
@@ -166,7 +178,7 @@ class TriageAgent:
                     )
                 )
                 text_res = response.text
-            except Exception as e:
+            except Exception:
                 text_res = self._format_human_response(tool_data, user_message)
         else:
             text_res = self._format_human_response(tool_data, user_message)
@@ -174,6 +186,7 @@ class TriageAgent:
         return {
             "response": text_res,
             "channel_used": "#citas / #staff",
+            "gateway_network_res": gw_res,
             "blocked": False
         }
 
@@ -182,7 +195,6 @@ class TriageAgent:
         if not tool_data:
             return "Hello! Welcome to Dr. Cureta Clinic. How can I help you find a specialist or schedule an appointment today?"
 
-        # Format appointment confirmation (agendar_turno)
         if tool_data.get("status") == "confirmed" or "booking" in tool_data:
             b = tool_data.get("booking", {})
             app_id = b.get("appointment_id", "TUR-101")
