@@ -55,5 +55,9 @@ echo "🚀 Applying Terraform Infrastructure Plan to GCP Cloud Run..."
 terraform apply -auto-approve
 
 echo "--------------------------------------------------------------------------------"
+echo "🔄 Updating Cloud Run Service Revision..."
+gcloud run deploy fortified-healthcare-fleet --image "${APP_IMAGE}" --region "${REGION}" --quiet
+
+echo "--------------------------------------------------------------------------------"
 echo "🎉 DEPLOYMENT TO GOOGLE CLOUD PLATFORM COMPLETED!"
 terraform output
