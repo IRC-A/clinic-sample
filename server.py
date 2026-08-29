@@ -5,8 +5,7 @@ import httpx
 import asyncio
 import subprocess
 from fastapi import FastAPI, Request
-from starlette.responses import JSONResponse, Response, StreamingResponse
-from src.config import config
+from starlette.responses import JSONResponse, Response
 
 app = FastAPI(title="The Fortified Healthcare Fleet — Unified GCP Server")
 
@@ -65,12 +64,28 @@ TOOLS_REGISTRY = {
 }
 
 
-@app.get("/mcp_{server_name}/tools")
-@app.get("/{server_name}/tools")
-def get_tools(server_name: str):
-    key = server_name if server_name.startswith("mcp_") else f"mcp_{server_name}"
-    tools = TOOLS_REGISTRY.get(key, TOOLS_REGISTRY.get(server_name, []))
-    return JSONResponse(content=tools)
+@app.get("/mcp_citas/tools")
+@app.get("/mcp-citas/tools")
+def get_citas_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_citas"])
+
+
+@app.get("/mcp_staff/tools")
+@app.get("/mcp-staff/tools")
+def get_staff_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_staff"])
+
+
+@app.get("/mcp_ehr/tools")
+@app.get("/mcp-ehr/tools")
+def get_ehr_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_ehr"])
+
+
+@app.get("/mcp_vademecum/tools")
+@app.get("/mcp-vademecum/tools")
+def get_vademecum_tools():
+    return JSONResponse(content=TOOLS_REGISTRY["mcp_vademecum"])
 
 
 @app.post("/mcp_{server_name}/invoke")
@@ -140,7 +155,7 @@ async def startup_event():
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
 async def proxy_streamlit(request: Request, path: str):
     """Proxies web requests to Streamlit running on port 8501."""
-    if path.startswith("mcp_") or path in ["mcp_citas/tools", "mcp_staff/tools", "mcp_ehr/tools", "mcp_vademecum/tools"]:
+    if any(p in path for p in ["mcp_", "mcp-", "tools", "register/auto"]):
         return JSONResponse(content={"error": "Not found"}, status_code=404)
 
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
