@@ -64,18 +64,14 @@ TOOLS_REGISTRY = {
 }
 
 
-@app.middleware("http")
-async def mcp_interceptor_middleware(request: Request, call_next):
-    """ASGI HTTP Middleware executing BEFORE any route resolution."""
-    raw_path = request.url.path.strip("/")
-    
-    if raw_path.startswith("mcp_") or raw_path.startswith("mcp-"):
-        parts = raw_path.split("/")
-        srv_name = parts[0].replace("-", "_")
-        tools = TOOLS_REGISTRY.get(srv_name, [])
-        return JSONResponse(content=tools)
-        
-    return await call_next(request)
+@app.get("/mcp_{server_name}/tools")
+@app.get("/mcp-{server_name}/tools")
+@app.get("/mcp_{server_name}")
+@app.get("/mcp-{server_name}")
+def serve_mcp_tools(server_name: str):
+    key = f"mcp_{server_name.replace('-', '_')}"
+    tools = TOOLS_REGISTRY.get(key, [])
+    return JSONResponse(content=tools)
 
 
 @app.get("/register/auto")
@@ -136,9 +132,15 @@ async def startup_event():
         pass
 
 
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+@app.get("/{path:path}")
+@app.post("/{path:path}")
 async def proxy_streamlit(request: Request, path: str):
-    """Proxies web requests to Streamlit running on port 8501."""
+    """Proxies web requests to Streamlit running on port 8501 if not an MCP endpoint."""
+    if path.startswith("mcp_") or path.startswith("mcp-"):
+        srv_name = path.strip("/").split("/")[0].replace("-", "_")
+        tools = TOOLS_REGISTRY.get(srv_name, [])
+        return JSONResponse(content=tools)
+
     url = f"http://127.0.0.1:{STREAMLIT_PORT}/{path}"
     
     async with httpx.AsyncClient(timeout=30.0) as client:
