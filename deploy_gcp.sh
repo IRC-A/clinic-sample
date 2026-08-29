@@ -34,7 +34,7 @@ echo "📌 Building App Container Image: ${APP_IMAGE}"
 echo "--------------------------------------------------------------------------------"
 
 # 1. Build and push Docker container image using Cloud Build
-gcloud builds submit --tag "${APP_IMAGE}" -f Dockerfile.app .
+gcloud builds submit --tag "${APP_IMAGE}" --dockerfile=Dockerfile.app .
 
 # 2. Prepare Terraform execution
 cd terraform
