@@ -235,7 +235,8 @@ async def startup_event():
         "--server.address=0.0.0.0",
         "--server.headless=true",
         "--server.enableCORS=false",
-        "--server.enableXsrfProtection=false"
+        "--server.enableXsrfProtection=false",
+        "--browser.gatherUsageStats=false"
     ])
     
     # 2. Wait 3 seconds and trigger BFA Gateway registration
@@ -251,20 +252,33 @@ async def startup_event():
 @app.websocket("/{path:path}")
 async def websocket_proxy(websocket: WebSocket, path: str = ""):
     """Bi-directional WebSocket proxying for Streamlit UI real-time session stream."""
-    await websocket.accept()
+    requested_subprotocols = websocket.scope.get("subprotocols", [])
+    subprotocol = requested_subprotocols[0] if requested_subprotocols else None
+    
+    if subprotocol:
+        await websocket.accept(subprotocol=subprotocol)
+    else:
+        await websocket.accept()
+
     streamlit_ws_url = f"ws://127.0.0.1:{STREAMLIT_PORT}/_stcore/stream"
     if path and path != "_stcore/stream":
         streamlit_ws_url = f"ws://127.0.0.1:{STREAMLIT_PORT}/{path}"
         
     try:
-        async with websockets.connect(streamlit_ws_url) as target_ws:
+        connect_kwargs = {}
+        if requested_subprotocols:
+            connect_kwargs["subprotocols"] = requested_subprotocols
+
+        async with websockets.connect(streamlit_ws_url, **connect_kwargs) as target_ws:
             async def forward_client_to_streamlit():
                 try:
                     while True:
                         data = await websocket.receive()
-                        if "text" in data and data["text"]:
+                        if data.get("type") == "websocket.disconnect":
+                            break
+                        if "text" in data and data["text"] is not None:
                             await target_ws.send(data["text"])
-                        elif "bytes" in data and data["bytes"]:
+                        elif "bytes" in data and data["bytes"] is not None:
                             await target_ws.send(data["bytes"])
                 except Exception:
                     pass
@@ -279,9 +293,17 @@ async def websocket_proxy(websocket: WebSocket, path: str = ""):
                 except Exception:
                     pass
 
-            await asyncio.gather(forward_client_to_streamlit(), forward_streamlit_to_client())
-    except (WebSocketDisconnect, Exception):
-        pass
+            task_client = asyncio.create_task(forward_client_to_streamlit())
+            task_streamlit = asyncio.create_task(forward_streamlit_to_client())
+
+            done, pending = await asyncio.wait(
+                [task_client, task_streamlit],
+                return_when=asyncio.FIRST_COMPLETED
+            )
+            for task in pending:
+                task.cancel()
+    except (WebSocketDisconnect, Exception) as e:
+        print(f"[WebSocket Proxy Closed]: {e}")
 
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
