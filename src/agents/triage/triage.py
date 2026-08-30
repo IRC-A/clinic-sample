@@ -87,7 +87,7 @@ class TriageAgent(BFAAgent):
             async with httpx.AsyncClient(timeout=5.0) as client:
                 disc_res = await client.post(
                     f"{gateway_url}/discover",
-                    params={"query": user_message},
+                    params={"query": semantic_query},
                     json=payload,
                     headers={"Authorization": f"Bearer {config.bfa_api_key}"}
                 )
