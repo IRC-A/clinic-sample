@@ -75,11 +75,14 @@ class TriageAgent(BFAAgent):
                 "error_message": f"🚫 BFA Gateway Policy Violation: Channel '{target_channel}' is masked/denied for identity '{self.agent_id}'."
             }
 
+        if not self.session_token:
+            await self.register_with_gateway(gateway_url)
+
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
         payload = {
             "query": semantic_query,
-            "session_token": det_data["det_token"],
+            "session_token": self.session_token or det_data["det_token"],
             "restricted_params": restricted_params
         }
 

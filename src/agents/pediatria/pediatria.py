@@ -67,11 +67,14 @@ class PediatriaAgent(BFAAgent):
     async def discover_and_execute(self, semantic_query: str, target_channel: str, restricted_params: Dict[str, Any]) -> Dict[str, Any]:
         """IRC-A Late-Binding Semantic Discovery (POST /discover) & Execution via BFA Gateway."""
         gateway_url = (self.gateway_url or config.bfa_gateway_url).rstrip("/")
+        if not self.session_token:
+            await self.register_with_gateway(gateway_url)
+
         det_data = issue_det_ticket(self.agent_id, target_channel, restricted_params)
 
         payload = {
             "query": semantic_query,
-            "session_token": det_data["det_token"],
+            "session_token": self.session_token or det_data["det_token"],
             "restricted_params": restricted_params
         }
 
