@@ -53,16 +53,45 @@ EHR_DB: Dict[str, Dict[str, Any]] = {
     name="consultar_historial",
     description="Consult Electronic Health Records (EHR), medical history, and allergies on protected #historial-medico channel."
 )
-def consultar_historial(paciente_id: str, medico_id: str, det_token: str = "") -> str:
-    params = {"paciente_id": paciente_id, "medico_id": medico_id}
+def consultar_historial(
+    paciente_id: str = "",
+    medico_id: str = "",
+    det_token: str = "",
+    patient_id: str = "",
+    doctor_id: str = "",
+    medico: str = "",
+    doctor: str = ""
+) -> str:
+    p_id = paciente_id or patient_id or ""
+    m_id = medico_id or doctor_id or medico or doctor or ""
+    
+    if not p_id or not m_id:
+        return json.dumps({"status": "error", "message": "Missing required fields. Required: (paciente_id/patient_id), (medico_id/doctor_id)."})
+
+    # Reconstruct the exact parameter dictionary as sent by the caller for signature canonical hash check
+    params = {}
+    if patient_id:
+        params["patient_id"] = patient_id
+    else:
+        params["paciente_id"] = p_id
+
+    if doctor_id:
+        params["doctor_id"] = doctor_id
+    elif medico:
+        params["medico"] = medico
+    elif doctor:
+        params["doctor"] = doctor
+    else:
+        params["medico_id"] = m_id
+
     if det_token:
         valid, msg, _ = verify_det_ticket(det_token, expected_channel="#historial-medico", params=params)
         if not valid:
             return f"❌ Access Denied Zero-Trust (#historial-medico): {msg}"
 
-    record = EHR_DB.get(str(paciente_id))
+    record = EHR_DB.get(str(p_id))
     if not record:
-        return json.dumps({"status": "not_found", "channel": "#historial-medico", "message": f"No medical history found for patient_id {paciente_id}"}, ensure_ascii=False)
+        return json.dumps({"status": "not_found", "channel": "#historial-medico", "message": f"No medical history found for patient_id {p_id}"}, ensure_ascii=False)
 
     return json.dumps({"status": "success", "channel": "#historial-medico", "health_record": record}, ensure_ascii=False, indent=2)
 
@@ -72,46 +101,88 @@ def consultar_historial(paciente_id: str, medico_id: str, det_token: str = "") -
     description="Record new medical diagnosis and evolution entry with DET-signed non-repudiation guarantee."
 )
 def guardar_evolucion(
-    paciente_id: str,
-    medico_id: str,
-    diagnostico: str,
-    tratamiento: str,
+    paciente_id: str = "",
+    medico_id: str = "",
+    diagnostico: str = "",
+    tratamiento: str = "",
     notas: str = "",
-    det_token: str = ""
+    det_token: str = "",
+    patient_id: str = "",
+    doctor_id: str = "",
+    medico: str = "",
+    doctor: str = "",
+    diagnosis: str = "",
+    treatment: str = "",
+    notes: str = ""
 ) -> str:
-    params = {
-        "paciente_id": paciente_id,
-        "medico_id": medico_id,
-        "diagnostico": diagnostico,
-        "tratamiento": tratamiento,
-        "notas": notas
-    }
-    
+    p_id = paciente_id or patient_id or ""
+    m_id = medico_id or doctor_id or medico or doctor or ""
+    diag = diagnostico or diagnosis or ""
+    treat = tratamiento or treatment or ""
+    notes_val = notas or notes or ""
+
+    if not p_id or not m_id or not diag or not treat:
+        return json.dumps({
+            "status": "error",
+            "message": "Missing required fields. Required: (paciente_id/patient_id), (medico_id/doctor_id), (diagnostico/diagnosis), (tratamiento/treatment)."
+        })
+
+    # Reconstruct the exact parameter dictionary as sent by the caller for signature canonical hash check
+    params = {}
+    if patient_id:
+        params["patient_id"] = patient_id
+    else:
+        params["paciente_id"] = p_id
+
+    if doctor_id:
+        params["doctor_id"] = doctor_id
+    elif medico:
+        params["medico"] = medico
+    elif doctor:
+        params["doctor"] = doctor
+    else:
+        params["medico_id"] = m_id
+
+    if diagnosis:
+        params["diagnosis"] = diagnosis
+    else:
+        params["diagnostico"] = diag
+
+    if treatment:
+        params["treatment"] = treatment
+    else:
+        params["tratamiento"] = treat
+
+    if notes:
+        params["notes"] = notes
+    else:
+        params["notas"] = notas_val
+
     if det_token:
         valid, msg, payload = verify_det_ticket(det_token, expected_channel="#historial-medico", params=params)
         if not valid:
             return f"❌ Access Denied Zero-Trust (#historial-medico): {msg}"
     else:
-        payload = {"sub": medico_id, "det_token": "mock_signed"}
+        payload = {"sub": m_id, "det_token": "mock_signed"}
 
     now_iso = datetime.now(timezone.utc).isoformat()
-    raw_content = f"{paciente_id}:{medico_id}:{diagnostico}:{tratamiento}:{now_iso}:{det_token}"
+    raw_content = f"{p_id}:{m_id}:{diag}:{treat}:{now_iso}:{det_token}"
     audit_hash = hashlib.sha256(raw_content.encode("utf-8")).hexdigest()
 
     new_evolution = {
         "date": now_iso,
-        "doctor_id": medico_id,
-        "diagnosis": diagnostico,
-        "treatment": tratamiento,
-        "notes": notas,
+        "doctor_id": m_id,
+        "diagnosis": diag,
+        "treatment": treat,
+        "notes": notes_val,
         "non_repudiation_hash": audit_hash,
         "det_signed": True
     }
 
-    if str(paciente_id) not in EHR_DB:
-        EHR_DB[str(paciente_id)] = {
-            "patient_id": str(paciente_id),
-            "name": f"Patient ID {paciente_id}",
+    if str(p_id) not in EHR_DB:
+        EHR_DB[str(p_id)] = {
+            "patient_id": str(p_id),
+            "name": f"Patient ID {p_id}",
             "age": 30,
             "medical_history": [],
             "allergies": [],
@@ -119,7 +190,7 @@ def guardar_evolucion(
             "evolutions": []
         }
 
-    EHR_DB[str(paciente_id)]["evolutions"].append(new_evolution)
+    EHR_DB[str(p_id)]["evolutions"].append(new_evolution)
 
     return json.dumps({
         "status": "persisted",

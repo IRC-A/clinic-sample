@@ -633,3 +633,11 @@ INFO:     127.0.0.1:52066 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
 [MainAgent] Reduced query from LLM: Agendar turno otorrinolaringología paciente Sandro lunes 17:00.
 [MainAgent] Synthesized response: Hola Sandro, lamento informarte que en la 'Clínica del Dr. Cureta' solo ofrecemos servicios de oncología. Si necesitas atención relacionada con oncología o tienes alguna pregunta sobre nuestros servicios, estaré encantado de ayudarte. Si buscas atención para tu dolor de garganta, te recomendaría contactar a una clínica que ofrezca servicios de otorrinolaringología. Estoy aquí para cualquier otra consulta que puedas tener.
 INFO:     127.0.0.1:52067 - "POST / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64033 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64056 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64171 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-08-30 09:27:52,913 - INFO - HTTP Request: POST http://localhost:8000/register/disconnect "HTTP/1.1 200 OK"
+INFO:     Application shutdown complete.
+INFO:     Finished server process [25672]

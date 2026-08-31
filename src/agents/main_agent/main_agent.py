@@ -57,6 +57,39 @@ class MainAgent(BFAInteractiveAgent):
     def gateway_public_key(self, value):
         pass
 
+    async def _get_llm_completion(self, system_prompt: str, user_prompt: str) -> str | None:
+        gemini_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        if gemini_key:
+            try:
+                from google import genai
+                client = genai.Client(api_key=gemini_key)
+                full_prompt = f"{system_prompt}\n\n{user_prompt}"
+                res = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=full_prompt
+                )
+                if res and getattr(res, "text", None):
+                    return res.text.strip()
+
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if openai_key:
+            try:
+                from openai import AsyncOpenAI
+                client = AsyncOpenAI(api_key=openai_key)
+                response = await client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.3
+                )
+                return response.choices[0].message.content.strip()
+            except Exception as e:
+                print(f"[MainAgent] OpenAI completion error: {e}")
+
+        return None
+
     async def handle_interaction(
         self, session_id: str, user_message: str, memory: MemoryStack
     ) -> str:
@@ -73,38 +106,26 @@ class MainAgent(BFAInteractiveAgent):
         # 2. Reduce the user message based on conversation history
         session_data = memory.get_session(session_id)
         history = session_data.get("history", [])
-        
-        reduced_query = user_message
-        openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=openai_key)
-            
-            history_text = "\n".join([f"{m['role'].capitalize()}: {m['content']}" for m in history])
-            
-            system_prompt = (
-                "You are an AI context manager for a medical routing gateway. "
-                "Read the conversation history and output a SINGLE, clear, standalone query that represents the user's FULL current need. "
-                "Remove all conversational redundancies, but keep all accumulated details (patient name, day, time, specialty). "
-                "For example, if history shows they want a pediatric appointment on August 10 and they just replied 'yes' or 'Sandro, on Thursday', "
-                "you should output: 'Agendar turno pediatria paciente Sandro jueves 10 agosto'. "
-                "If it's just a greeting, output 'saludar'. "
-                "IMPORTANT: Output ONLY the reduced query, nothing else."
-            )
-            
-            try:
-                response = await client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Conversation history:\n{history_text}\n\nReduced query:"}
-                    ],
-                    temperature=0.0
-                )
-                reduced_query = response.choices[0].message.content.strip()
-                print(f"[MainAgent] Reduced query from LLM: {reduced_query}")
-            except Exception as e:
-                print(f"[MainAgent] Reduction error: {e}")
+        history_text = "\n".join([f"{m['role'].capitalize()}: {m['content']}" for m in history])
+
+        reduction_prompt = (
+            "You are an AI context manager for a medical routing gateway. "
+            "Read the conversation history and user message, and output a SINGLE, clear, standalone query representing the user's explicit clinical or administrative need. "
+            "Preserve all relevant medical context, specialty names (Pediatria, Clinica General, Oncologia), patient names, symptoms, and scheduling details. "
+            "If the user message is strictly a pure greeting without any medical or scheduling request (e.g. only 'Hola' or 'Buenas tardes'), output 'saludo general'. "
+            "If there is ANY question, symptom, or appointment request, output the distilled medical/appointment query. "
+            "IMPORTANT: Output ONLY the query string, nothing else."
+        )
+
+        llm_reduced = await self._get_llm_completion(
+            system_prompt=reduction_prompt,
+            user_prompt=f"Conversation history:\n{history_text}\n\nUser Message: {user_message}\n\nReduced query:"
+        )
+        if not llm_reduced or (llm_reduced.strip().lower() in ["saludar", "saludo general", "saludo"] and len(user_message.strip().split()) > 2):
+            reduced_query = user_message.strip()
+        else:
+            reduced_query = llm_reduced.strip()
+        print(f"[MainAgent] Reduced query from conversation memory: {reduced_query}")
 
         # 3. Delegate by intent to the BFA Gateway using the reduced query
         try:
@@ -112,37 +133,23 @@ class MainAgent(BFAInteractiveAgent):
             if not raw_result:
                 return "[Chatbot] At this moment I can't help with that."
                 
-            # 4. Synthesize the final response using the context
-            if openai_key:
-                from openai import AsyncOpenAI
-                client = AsyncOpenAI(api_key=openai_key)
-                
-                synthesis_prompt = (
-                    f"You are the frontend receptionist for {self.name}. "
-                    "You have just delegated a user request to a specialist agent or system. "
-                    "Below is the raw response returned by the internal system. "
-                    "Your job is to read the conversation history and the raw response, and formulate a final, natural, empathetic, and professional reply to the user. "
-                    "Do NOT add new medical advice or change the facts of the raw response. Just present it conversationally. "
-                    "If the raw response is already conversational, just pass it through or polish it slightly."
-                )
-                
-                try:
-                    synth_response = await client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {"role": "system", "content": synthesis_prompt},
-                            {"role": "user", "content": f"Conversation history:\n{history_text}\n\nInternal system response:\n{raw_result}\n\nFinal reply to user:"}
-                        ],
-                        temperature=0.3
-                    )
-                    final_result = synth_response.choices[0].message.content.strip()
-                    print(f"[MainAgent] Synthesized response: {final_result}")
-                    return final_result
-                except Exception as e:
-                    print(f"[MainAgent] Synthesis error: {e}")
-                    return raw_result
-            else:
-                return raw_result
+            # 4. Synthesize the final response using the context and memory
+            synthesis_prompt = (
+                f"You are the frontend receptionist for {self.name}. "
+                "You have just delegated a user request to a specialist agent or system. "
+                "Below is the raw response returned by the internal system. "
+                "Your job is to read the conversation history and the raw response, and formulate a final, natural, empathetic, and professional reply to the user. "
+                "Do NOT add new medical advice or change the facts of the raw response. Just present it conversationally. "
+                "If the raw response is already conversational, just pass it through or polish it slightly."
+            )
+
+            synth_response = await self._get_llm_completion(
+                system_prompt=synthesis_prompt,
+                user_prompt=f"Conversation history:\n{history_text}\n\nInternal system response:\n{raw_result}\n\nFinal reply to user:"
+            )
+            final_result = synth_response if synth_response else raw_result
+            print(f"[MainAgent] Synthesized response: {final_result}")
+            return final_result
                 
         except Exception as err:
             print(f"[Chatbot] Delegation error: {err}")

@@ -1,0 +1,44 @@
+services:
+  bfa-gateway:
+    build:
+      context: /Users/sandrogarcia/GitRespos/BFA-Gateway
+      dockerfile: Dockerfile
+    container_name: bfa-gateway-local
+    ports:
+      - "8001:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - BFA_GATEWAY_HOST=0.0.0.0
+      - BFA_GATEWAY_PORT=8000
+      - BFA_API_KEY=bfa_gcp_hackathon_demo_key_2026
+      - BFA_USE_MOCK_EMBEDDINGS=false
+      - BFA_USE_OPENAI_EMBEDDINGS=true
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6L8dAhh-4qHAdvZJ3uYkJ87QiU1UDrl5SZedgvAUtXGOg}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6L8dAhh-4qHAdvZJ3uYkJ87QiU1UDrl5SZedgvAUtXGOg}
+    volumes:
+      - /Users/sandrogarcia/GitRespos/BFA-Gateway/bfa_gateway:/app/bfa_gateway
+
+  healthcare-fleet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: healthcare-fleet-local
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8080
+      - BFA_GATEWAY_URL=http://bfa-gateway:8000
+      - BFA_API_KEY=bfa_gcp_hackathon_demo_key_2026
+      - HEALTHCARE_APP_URL=http://healthcare-fleet:8080
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6L8dAhh-4qHAdvZJ3uYkJ87QiU1UDrl5SZedgvAUtXGOg}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - TRIAGE_CHANNELS=#citas,#staff
+      - DOCTOR_CHANNELS=#citas,#staff,#historial-medico,#vademecum
+    volumes:
+      - ./src:/app/src
+      - ./server.py:/app/server.py
+      - ./app.py:/app/app.py
+    depends_on:
+      - bfa-gateway

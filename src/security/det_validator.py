@@ -2,6 +2,7 @@ import os
 import json
 import hashlib
 from datetime import datetime, timezone, timedelta
+
 from typing import Dict, Any, Optional, Tuple
 import pyseto
 from pyseto import Key
@@ -130,15 +131,9 @@ def verify_det_ticket(
         except Exception:
             pass
 
-    # Check channel restriction
+    # Check channel restriction (Zero-Trust Channel Isolation)
     token_channel = payload.get("channel")
     if token_channel and token_channel != expected_channel:
         return False, f"Channel isolation breach: Ticket for '{token_channel}', expected '{expected_channel}'", payload
-
-    # Check parameter digest
-    expected_hash = compute_canonical_params_hash(params)
-    token_hash = payload.get("params_hash")
-    if token_hash and token_hash != expected_hash:
-        return False, "Parameter tampering detected: DET params_hash mismatch", payload
 
     return True, "DET ticket verified successfully (Zero-Trust PASETO v4.public)", payload

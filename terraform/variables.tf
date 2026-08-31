@@ -33,3 +33,10 @@ variable "bfa_api_key" {
   default     = "bfa_gcp_hackathon_demo_key_2026"
   sensitive   = true
 }
+
+variable "openai_api_key" {
+  type        = string
+  description = "OpenAI API Key for fallback LLM operations"
+  default     = ""
+  sensitive   = true
+}

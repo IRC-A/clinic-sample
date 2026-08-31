@@ -68,6 +68,10 @@ resource "google_cloud_run_v2_service" "healthcare_app" {
         name  = "GOOGLE_API_KEY"
         value = var.gemini_api_key
       }
+      env {
+        name  = "OPENAI_API_KEY"
+        value = var.openai_api_key
+      }
 
       ports {
         container_port = 8080

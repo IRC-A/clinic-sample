@@ -148,6 +148,9 @@ with st.sidebar:
 st.markdown('<div class="main-title">The Fortified Healthcare Fleet</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Google ADK & Gemini 3.5 with IRC-A Zero-Trust Runtime Governance on Google Cloud</div>', unsafe_allow_html=True)
 
+if "triage_agent" not in st.session_state:
+    st.session_state.triage_agent = TriageAgent()
+
 if active_view == "Patient Portal (Triage Agent)":
     st.subheader("🤖 View 1: Patient Portal (Triage Agent - Gemini 3.5 Flash)")
     st.info("💡 **Authorized Channels:** `#citas`, `#staff`. **Zero-Trust Enforcement:** Access attempts to `#historial-medico` will be masked and rejected.")
@@ -164,8 +167,8 @@ if active_view == "Patient Portal (Triage Agent)":
 
         with st.chat_message("assistant"):
             with st.spinner("Processing with Gemini 3.5 Flash & BFA Gateway..."):
-                triage_agent = TriageAgent()
-                result = asyncio.run(triage_agent.run(user_input))
+                triage_agent = st.session_state.triage_agent
+                result = asyncio.run(triage_agent.run(user_input, history=st.session_state.messages_triage))
                 st.markdown(result["response"])
 
                 if result.get("blocked"):
