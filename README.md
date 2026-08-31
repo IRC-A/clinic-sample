@@ -109,9 +109,9 @@ The entire ecosystem is deployed live on **Google Cloud Platform (Cloud Run)**:
 
 ### Scenario 3: Specialist Doctor Console (Authorized Channels: `#historial-medico`, `#vademecum`)
 1. Switch to the **"Specialist Medical Console"** in the sidebar.
-2. Select **"Dra. Ana López (Pediatría)"** (Patient: `101 - Tomás Gomez`).
+2. Select **"Dr. Ana López (Pediatrics)"** (Patient: `101 - Tomás Gomez`).
 3. Send a clinical query:
-   > *"Consultar historial clínico del paciente y verificar si tiene alergias a la amoxicilina antes de recetar."*
+   > *"Check patient medical history and verify if there are any contraindications or allergies to amoxicillin before prescribing."*
 4. **Expected Result:**
    - The Doctor Agent initiates a challenge-response handshake with IRC-A Gateway.
    - Discovers and executes `consultar_historial` and `validar_contraindicaciones` over `#historial-medico` and `#vademecum`.
